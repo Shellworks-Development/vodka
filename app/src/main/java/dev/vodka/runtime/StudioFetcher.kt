@@ -18,6 +18,34 @@ class StudioFetcher(private val destDir: File) {
     )
   }
 
+  fun downloadPackage(
+    version: Version,
+    target: File,
+    onProgress: (Long, Long) -> Unit = { _, _ -> },
+  ): File {
+    target.parentFile?.mkdirs()
+    val connection = URL("https://setup.rbxcdn.com/${version.upload}-RobloxStudio.zip")
+      .openConnection() as HttpURLConnection
+    connection.setRequestProperty("User-Agent", "Vodka")
+    connection.connectTimeout = 20000
+    connection.readTimeout = 180000
+    val total = connection.contentLengthLong
+    connection.inputStream.use { input ->
+      target.outputStream().use { output ->
+        val buffer = ByteArray(1 shl 16)
+        var done = 0L
+        while (true) {
+          val read = input.read(buffer)
+          if (read < 0) break
+          output.write(buffer, 0, read)
+          done += read
+          onProgress(done, total)
+        }
+      }
+    }
+    return target
+  }
+
   fun downloadInstaller(version: Version, onProgress: (Long, Long) -> Unit = { _, _ -> }): File {
     val url = "https://setup.rbxcdn.com/${version.upload}-RobloxStudioInstaller.exe"
     val target = File(destDir, "RobloxStudioInstaller.exe")

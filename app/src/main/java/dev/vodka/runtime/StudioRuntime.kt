@@ -171,7 +171,7 @@ class StudioRuntime(
   }
 
   fun findStudioExe(): String? {
-    val start = File(roots.arm64Rootfs, "home/vodka/.wine/drive_c")
+    val start = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c")
     return search(start, 0)
   }
 
@@ -180,8 +180,8 @@ class StudioRuntime(
     val children = dir.listFiles() ?: return null
     for (child in children) {
       if (child.isFile && child.name.equals("RobloxStudioBeta.exe", ignoreCase = true)) {
-        val relative = child.absolutePath.removePrefix(roots.arm64Rootfs.absolutePath)
-        return relative.ifEmpty { child.absolutePath }
+        val relative = child.absolutePath.removePrefix(roots.x86Rootfs.absolutePath)
+        return "/opt/vodka/rootfs-x86_64" + relative
       }
     }
     for (child in children) {

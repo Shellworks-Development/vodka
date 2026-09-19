@@ -451,27 +451,54 @@ class MainActivity : AppCompatActivity() {
 
   private fun fetchStudio() {
     setBusy(true)
-    binding.status.text = "Downloading Roblox Studio…"
+    beginLive("Downloading Roblox Studio…")
     val roots = (application as VodkaApp).rootfs
     io.execute {
       try {
-        val dir = File(roots.arm64Rootfs, "home/vodka").apply { mkdirs() }
-        val fetcher = StudioFetcher(dir)
+        val downloads = File(roots.baseDir, "downloads").apply { mkdirs() }
+        val fetcher = StudioFetcher(downloads)
         val version = fetcher.latestVersion()
-        fetcher.downloadInstaller(version) { done, total ->
+        val zip = File(downloads, "RobloxStudio-${version.version}.zip")
+        fetcher.downloadPackage(version, zip) { done, total ->
           if (total > 0) {
             val percent = (done * 100 / total).toInt()
             runOnUiThread { binding.status.text = "Roblox Studio ${version.version}: $percent%" }
           }
         }
-        runOnUiThread { beginLive(getString(R.string.status_installing_studio)) }
-        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend, { appendLive(it) }) {
-          report(it)
-          runOnUiThread { updateSetup() }
+        runOnUiThread { beginLive("Extracting Roblox Studio…") }
+        val destination = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c/RobloxStudio")
+        destination.deleteRecursively()
+        destination.mkdirs()
+        var files = 0
+        java.util.zip.ZipInputStream(zip.inputStream().buffered()).use { stream ->
+          while (true) {
+            val entry = stream.nextEntry ?: break
+            val name = entry.name.replace('\\', '/')
+            if (!name.contains("..")) {
+              val out = File(destination, name)
+              if (entry.isDirectory) {
+                out.mkdirs()
+              } else {
+                out.parentFile?.mkdirs()
+                out.outputStream().use { stream.copyTo(it) }
+                files++
+              }
+            }
+            stream.closeEntry()
+            if (files % 100 == 0) {
+              val count = files
+              runOnUiThread { binding.status.text = "Extracting Roblox Studio… $count files" }
+            }
+          }
+        }
+        zip.delete()
+        runOnUiThread {
+          binding.status.text = "Roblox Studio ${version.version} installed ($files files)"
+          updateSetup()
         }
       } catch (e: Exception) {
         runOnUiThread {
-          binding.status.text = "Studio download failed: ${e.message}"
+          binding.status.text = "Studio install failed: ${e.message}"
           setBusy(false)
         }
       }

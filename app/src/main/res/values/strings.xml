@@ -39,7 +39,7 @@
   <string name="step_detail_launch">Everything is set up. Launch Roblox Studio.</string>
   <string name="action_launch">Launch Roblox Studio</string>
   <string name="step_title_install_studio">Step 5 of 5 · Roblox Studio</string>
-  <string name="step_detail_install_studio">Downloads the Roblox Studio installer from Roblox and installs it into the Wine prefix. This needs network and can take a few minutes.</string>
+  <string name="step_detail_install_studio">Downloads the Roblox Studio package from Roblox\u2019s CDN and installs it into the Wine prefix. This needs network.</string>
   <string name="action_install_studio_step">Install Roblox Studio</string>
   <string name="status_installing_studio">Installing Roblox Studio…</string>
   <string name="step_title_launch_missing">Studio not found</string>
