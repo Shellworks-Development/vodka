@@ -172,7 +172,7 @@ jobs:
             bash -euxo pipefail -c '
               apt-get update
               apt-get install -y --no-install-recommends \
-                ninja-build python3-mako python3-pip pkg-config git ca-certificates \
+                ninja-build python3-mako python3-pip python3-yaml python3-ply pkg-config git ca-certificates \
                 gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev byacc flex \
                 libvulkan-dev
               pip3 install --break-system-packages --quiet meson
