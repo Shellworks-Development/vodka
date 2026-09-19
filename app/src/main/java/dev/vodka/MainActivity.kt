@@ -388,14 +388,12 @@ class MainActivity : AppCompatActivity() {
             synchronized(report) { report.append(name).append(": not in release\n") }
             continue
           }
-          val remote = byName["$name.sha256"]?.let {
-            runCatching { fetcher.downloadText(it).split(Regex("\\s+"))[0] }.getOrNull()
-          }
-          val local = File(installedDir, name).takeIf { it.exists() }?.readText()?.trim()
+          val marker = File(installedDir, name)
+          val installedSize = marker.takeIf { it.exists() }?.readText()?.trim()?.toLongOrNull()
           val inboxFile = File(roots.internalInbox, name)
           val hasCopy = inboxFile.exists() && inboxFile.length() == asset.size
           when {
-            remote != null && remote == local && hasCopy -> {
+            installedSize == asset.size && hasCopy -> {
               synchronized(report) { report.append(name).append(": unchanged, skipped\n") }
             }
             hasCopy -> {
@@ -441,9 +439,7 @@ class MainActivity : AppCompatActivity() {
             else -> null
           }
           if (result is RootfsManager.InstallResult.Installed) {
-            byName["$name.sha256"]?.let {
-              runCatching { File(installedDir, name).writeText(fetcher.downloadText(it).split(Regex("\\s+"))[0]) }
-            }
+            File(installedDir, name).writeText(byName.getValue(name).size.toString())
           }
           synchronized(report) { report.append(name).append(": ").append(describe(result)).append('\n') }
           publishProgress(report, needed, progress)
