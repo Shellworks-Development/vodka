@@ -62,7 +62,7 @@ class StudioRuntime(
     onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
-    runScriptEnv(path, emptyList(), backend, onOutput, onFinished)
+    runScriptEnv(path, emptyList(), backend, onOutput, onFinished = onFinished)
   }
 
   fun runScriptEnv(
@@ -70,6 +70,7 @@ class StudioRuntime(
     extraEnv: List<String>,
     backend: ContainerBackend,
     onOutput: ((String) -> Unit)? = null,
+    workingDir: String = home,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
     writeFexConfig()
@@ -96,7 +97,7 @@ class StudioRuntime(
       backend = backend,
       binds = binds(),
       env = env,
-      workingDir = home,
+      workingDir = workingDir,
       onOutput = onOutput,
       onFinished = onFinished,
     )
@@ -113,7 +114,8 @@ class StudioRuntime(
       listOf("STUDIO_EXE=$studioExe"),
       backend,
       onOutput,
-      onFinished,
+      workingDir = "$guestRootfs/opt/vodka/prefix/drive_c",
+      onFinished = onFinished,
     )
   }
 
@@ -128,7 +130,7 @@ class StudioRuntime(
       listOf("INSTALLER=$installer"),
       backend,
       onOutput,
-      onFinished,
+      onFinished = onFinished,
     )
   }
 
@@ -171,18 +173,17 @@ class StudioRuntime(
   }
 
   fun findStudioExe(): String? {
-    val start = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c")
-    return search(start, 0)
+    val driveC = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c")
+    val found = search(driveC, 0) ?: return null
+    val relative = found.absolutePath.removePrefix(driveC.absolutePath).trimStart('/').replace('/', '\\')
+    return "C:\\$relative"
   }
 
-  private fun search(dir: File, depth: Int): String? {
+  private fun search(dir: File, depth: Int): File? {
     if (depth > 8 || !dir.isDirectory) return null
     val children = dir.listFiles() ?: return null
     for (child in children) {
-      if (child.isFile && child.name.equals("RobloxStudioBeta.exe", ignoreCase = true)) {
-        val relative = child.absolutePath.removePrefix(roots.x86Rootfs.absolutePath)
-        return "/opt/vodka/rootfs-x86_64" + relative
-      }
+      if (child.isFile && child.name.equals("RobloxStudioBeta.exe", ignoreCase = true)) return child
     }
     for (child in children) {
       val found = search(child, depth + 1)

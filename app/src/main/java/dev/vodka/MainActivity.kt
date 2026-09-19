@@ -476,7 +476,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         runOnUiThread { beginLive("Extracting Roblox Studio…") }
-        val destination = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c/RobloxStudio")
+        val destination = File(
+          roots.x86Rootfs,
+          "opt/vodka/prefix/drive_c/versions/${version.upload}",
+        )
+        File(roots.x86Rootfs, "opt/vodka/prefix/drive_c/versions").mkdirs()
         destination.deleteRecursively()
         destination.mkdirs()
         var files = 0
@@ -506,6 +510,23 @@ class MainActivity : AppCompatActivity() {
           }
           zip.delete()
         }
+
+        File(destination, "qt.conf").writeText("[Paths]\nPrefix=.\nPlugins=Qt5\n")
+        File(destination, "AppSettings.xml").writeText(
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<Settings>\r\n" +
+            "        <ContentFolder>content</ContentFolder>\r\n" +
+            "        <BaseUrl>http://www.roblox.com</BaseUrl>\r\n</Settings>\r\n",
+        )
+        val qt5 = File(destination, "Qt5")
+        for (plugin in listOf("platforms", "imageformats", "styles")) {
+          val from = File(qt5, plugin)
+          val to = File(destination, plugin)
+          if (from.isDirectory) {
+            to.deleteRecursively()
+            from.copyRecursively(to, overwrite = true)
+          }
+        }
+
         runOnUiThread {
           binding.status.text = "Roblox Studio ${version.version} installed ($files files)"
           updateSetup()
