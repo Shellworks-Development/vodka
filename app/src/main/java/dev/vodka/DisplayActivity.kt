@@ -32,6 +32,31 @@ class DisplayActivity : AppCompatActivity() {
   private var output: OutputStream? = null
   private var inputPort = 5599
 
+  private val inputQueue = java.util.concurrent.LinkedBlockingQueue<String>()
+  @Volatile private var inputAlive = true
+
+  private fun startInputThread() {
+    Thread {
+      while (inputAlive) {
+        val line = try {
+          inputQueue.take()
+        } catch (_: InterruptedException) {
+          break
+        }
+        if (output == null) connect()
+        val stream = output ?: continue
+        try {
+          stream.write((line + "\n").toByteArray())
+          stream.flush()
+        } catch (error: Exception) {
+          android.util.Log.w("VodkaInput", "send failed: $error")
+          output = null
+          socket = null
+        }
+      }
+    }.also { it.isDaemon = true }.start()
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_display)
@@ -55,6 +80,7 @@ class DisplayActivity : AppCompatActivity() {
     })
 
     val keyInput = findViewById<EditText>(R.id.keyInput)
+    startInputThread()
     keyInput.requestFocus()
     keyInput.addTextChangedListener(object : TextWatcher {
       override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -100,16 +126,7 @@ class DisplayActivity : AppCompatActivity() {
   }
 
   private fun send(line: String) {
-    if (output == null) connect()
-    val stream = output ?: return
-    try {
-      stream.write((line + "\n").toByteArray())
-      stream.flush()
-    } catch (error: Exception) {
-      android.util.Log.w("VodkaInput", "send failed: $error")
-      output = null
-      socket = null
-    }
+    inputQueue.offer(line)
   }
 
   private fun androidKeyToKeysym(keyCode: Int, event: KeyEvent): Int = when (keyCode) {
@@ -205,6 +222,7 @@ class DisplayActivity : AppCompatActivity() {
 
   override fun onDestroy() {
     running = false
+    inputAlive = false
     renderThread?.join(500)
     try {
       socket?.close()
