@@ -49,13 +49,19 @@ fi
 mkdir -p "$out_dir"
 
 echo "==> building image $image ($platform)"
+cache_args=()
+if [ "${VODKA_BUILDX_CACHE:-0}" = "1" ]; then
+  cache_args+=(--cache-from type=gha --cache-to type=gha,mode=max)
+fi
 if [ "$engine" = "docker" ]; then
   "$engine" buildx build --platform "$platform" --load \
     ${VODKA_DXVK_VERSION:+--build-arg "DXVK_VERSION=$VODKA_DXVK_VERSION"} \
+    "${cache_args[@]}" \
     -t "$image" -f "$script_dir/Dockerfile" "$script_dir"
 else
   "$engine" build --platform "$platform" \
     ${VODKA_DXVK_VERSION:+--build-arg "DXVK_VERSION=$VODKA_DXVK_VERSION"} \
+    "${cache_args[@]}" \
     -t "$image" -f "$script_dir/Dockerfile" "$script_dir"
 fi
 

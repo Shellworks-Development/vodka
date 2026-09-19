@@ -144,6 +144,8 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Build x86-64 Wine rootfs
+        env:
+          VODKA_BUILDX_CACHE: "1"
         run: ./runtime/rootfs-x86_64/build.sh
 
       - name: Show output
@@ -165,6 +167,8 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Build ARM64 rootfs
+        env:
+          VODKA_BUILDX_CACHE: "1"
         run: ./runtime/rootfs-arm64/build.sh
 
       - name: Show output
