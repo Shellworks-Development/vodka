@@ -12,6 +12,7 @@ on:
           - box64
           - fex
           - winerootfs
+          - rootfsarm64
           - all
       thunks:
         description: Build FEX host thunks (Vulkan/GL/EGL)
@@ -134,4 +135,25 @@ jobs:
         with:
           name: rootfs-x86_64
           path: build/rootfs/rootfs-x86_64.tar.gz*
+          if-no-files-found: error
+
+  rootfsarm64:
+    name: arm64 rootfs (mesa/turnip)
+    if: ${{ github.event.inputs.target == 'rootfsarm64' || github.event.inputs.target == 'all' }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ARM64 rootfs
+        run: ./runtime/rootfs-arm64/build.sh
+
+      - name: Show output
+        run: ls -lh build/rootfs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rootfs-arm64
+          path: build/rootfs/rootfs-arm64.tar.gz*
           if-no-files-found: error

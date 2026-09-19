@@ -52,6 +52,7 @@ xvfb
 # Graphics: Vulkan
 libvulkan1
 mesa-vulkan-drivers
+vulkan-tools
 
 # Wayland (future presentation path)
 libwayland-client0
