@@ -25,8 +25,8 @@ int main(void) {
   for (uint32_t i = 0; i < count; ++i) {
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(devices[i], &props);
-    printf("  [%u] device=%s driver=%s api=%u.%u.%u type=%d\n", i,
-           props.deviceName, props.driverName,
+    printf("  [%u] device=%s api=%u.%u.%u type=%d\n", i,
+           props.deviceName,
            VK_VERSION_MAJOR(props.apiVersion), VK_VERSION_MINOR(props.apiVersion),
            VK_VERSION_PATCH(props.apiVersion), props.deviceType);
   }
