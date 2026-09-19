@@ -16,6 +16,9 @@ export WINESERVER
 export WINEDLLPATH
 export WINEDATADIR
 
+mkdir -p /tmp/.wine-0 2>/dev/null || true
+chmod 700 /tmp/.wine-0 2>/dev/null || true
+
 export DISPLAY=:99
 Xvfb :99 -nolock -screen 0 "${FBSIZE:-1280x720x24}" -fbdir /fb >/tmp/xvfb.log 2>&1 &
 sleep 3
