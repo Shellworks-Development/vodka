@@ -1,6 +1,5 @@
 wine
 wine64
-winetricks
 cabextract
 ca-certificates
 curl

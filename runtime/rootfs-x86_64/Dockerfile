@@ -13,6 +13,10 @@ RUN apt-get update \
       $(grep -vE '^[[:space:]]*(#|$)' /tmp/vodka/packages.txt | tr '\n' ' ') \
  && rm -rf /var/lib/apt/lists/*
 
+RUN curl -L --fail -o /usr/local/bin/winetricks \
+      "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" \
+ && chmod 755 /usr/local/bin/winetricks
+
 RUN mkdir -p /opt/vodka/dxvk \
  && curl -L --fail -o /tmp/dxvk.tar.gz \
       "https://github.com/doitsujin/dxvk/releases/download/v${DXVK_VERSION}/dxvk-${DXVK_VERSION}.tar.gz" \
