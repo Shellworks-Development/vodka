@@ -166,29 +166,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tooling
+      - name: Build Mesa (Turnip, kgsl) in bookworm
         run: |
-          sudo apt-get update
-          sudo apt-get install -y meson ninja-build python3-mako pkg-config git \
-            libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev
-
-      - name: Build Mesa (Turnip, kgsl)
-        run: |
-          set -euxo pipefail
-          git clone --depth 1 --branch mesa-23.3.6 \
-            https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
-          meson setup mesa-src/build mesa-src \
-            --prefix=/usr \
-            --buildtype=release \
-            -Dvulkan-drivers=freedreno \
-            -Dgallium-drivers=freedreno \
-            -Dfreedreno-kmds=kgsl \
-            -Dglx=disabled \
-            -Dplatforms= \
-            -Dllvm=disabled
-          ninja -C mesa-src/build
-          rm -rf stage
-          DESTDIR="$PWD/stage" ninja -C mesa-src/build install
+          docker run --rm -v "$PWD":/w -w /w debian:bookworm \
+            bash -euxo pipefail -c '
+              apt-get update
+              apt-get install -y --no-install-recommends \
+                meson ninja-build python3-mako pkg-config git ca-certificates \
+                gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev
+              git clone --depth 1 --branch mesa-23.3.6 \
+                https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
+              meson setup mesa-src/build mesa-src \
+                --prefix=/usr \
+                --buildtype=release \
+                -Dvulkan-drivers=freedreno \
+                -Dgallium-drivers=freedreno \
+                -Dfreedreno-kmds=kgsl \
+                -Dglx=disabled \
+                -Dplatforms= \
+                -Dllvm=disabled
+              ninja -C mesa-src/build
+              rm -rf stage
+              DESTDIR=/w/stage ninja -C mesa-src/build install
+            '
 
       - name: Package
         run: |
