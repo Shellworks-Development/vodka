@@ -25,6 +25,6 @@ RUN mkdir -p /usr/lib/x86_64-linux-gnu \
  && mkdir -p /opt \
  && ln -sfn /opt/vodka/rootfs-x86_64/opt/kombucha /opt/kombucha \
  && ( [ -s /etc/machine-id ] || printf '0123456789abcdef0123456789abcdef\n' > /etc/machine-id ) \
- && chmod 755 /usr/local/bin/vodka-input
+ && chmod 755 /usr/local/bin/vodka-* 2>/dev/null || true
 
 CMD ["/bin/bash"]
