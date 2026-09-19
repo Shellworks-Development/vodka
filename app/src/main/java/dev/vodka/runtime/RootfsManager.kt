@@ -60,7 +60,7 @@ class RootfsManager(context: Context) {
 
   fun isFexInstalled(): Boolean = fileExists(arm64Rootfs, "usr/bin/FEX") || fileExists(arm64Rootfs, "bin/FEX")
 
-  fun isPrefixReady(): Boolean = fileExists(arm64Rootfs, "home/vodka/.wine/drive_c")
+  fun isPrefixReady(): Boolean = fileExists(x86Rootfs, "opt/vodka/prefix/drive_c")
 
   fun installArm64(archive: File): InstallResult =
     install(archive, arm64Rootfs) { it ->
