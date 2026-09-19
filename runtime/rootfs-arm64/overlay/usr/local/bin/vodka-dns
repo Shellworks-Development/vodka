@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+import socket
+
+UPSTREAMS = ["192.168.0.1", "1.1.1.1"]
+
+
+def query(data):
+    for upstream in UPSTREAMS:
+        sock = None
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(3)
+            sock.sendto(data, (upstream, 53))
+            reply, _ = sock.recvfrom(4096)
+            return reply
+        except Exception:
+            pass
+        finally:
+            if sock is not None:
+                sock.close()
+    return None
+
+
+def main():
+    try:
+        server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind(("127.0.0.1", 53))
+    except Exception as error:
+        print("vodka-dns: bind failed: %s" % error, flush=True)
+        return
+    print("vodka-dns: listening on 127.0.0.1:53", flush=True)
+    while True:
+        data, address = server.recvfrom(4096)
+        reply = query(data)
+        if reply:
+            server.sendto(reply, address)
+
+
+main()

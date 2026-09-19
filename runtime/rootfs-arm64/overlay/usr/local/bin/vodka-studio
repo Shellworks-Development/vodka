@@ -4,19 +4,26 @@ set -u
 pkill -f RobloxStudioBeta 2>/dev/null || true
 pkill -f wineserver 2>/dev/null || true
 pkill -f Xvfb 2>/dev/null || true
+pkill -f vodka-proxy 2>/dev/null || true
 sleep 1
 rm -f /fb/Xvfb_screen0
 
 mkdir -p /tmp/.wine-0 2>/dev/null || true
 chmod 700 /tmp/.wine-0 2>/dev/null || true
 
+vodka-proxy >/tmp/vodka-proxy.log 2>&1 &
+sleep 1
+
+export http_proxy=http://127.0.0.1:8899
+export https_proxy=http://127.0.0.1:8899
+export HTTP_PROXY=http://127.0.0.1:8899
+export HTTPS_PROXY=http://127.0.0.1:8899
+
 export DISPLAY=:99
 export WINEDEBUG=err+all,warn+all
 export WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/x86_64-unix
 export WINEDATADIR=/opt/kombucha/share/wine
 export QT_QPA_PLATFORM=windows
-export QT_PLUGIN_PATH='Z:/opt/vodka/rootfs-x86_64/opt/vodka/prefix/drive_c/RobloxStudio/Qt5'
-export QT_QPA_PLATFORM_PLUGIN_PATH='Z:/opt/vodka/rootfs-x86_64/opt/vodka/prefix/drive_c/RobloxStudio/Qt5/platforms'
 
 Xvfb :99 -nolock -screen 0 "${FBSIZE:-1280x720x24}" -fbdir /fb >/tmp/xvfb.log 2>&1 &
 sleep 3

@@ -485,6 +485,8 @@ class MainActivity : AppCompatActivity() {
         destination.mkdirs()
         var files = 0
         for (zip in zips) {
+          val subdir = PACKAGE_DIRS[zip.name] ?: ""
+          val root = if (subdir.isEmpty()) destination else File(destination, subdir).apply { mkdirs() }
           java.util.zip.ZipInputStream(zip.inputStream().buffered()).use { stream ->
             while (true) {
               val entry = stream.nextEntry ?: break
@@ -493,7 +495,7 @@ class MainActivity : AppCompatActivity() {
                 stream.closeEntry()
                 continue
               }
-              val out = File(destination, name)
+              val out = File(root, name)
               if (entry.isDirectory || name.endsWith("/")) {
                 out.mkdirs()
               } else if (!out.isDirectory) {
@@ -663,5 +665,16 @@ class MainActivity : AppCompatActivity() {
     session.shutdown()
     io.shutdownNow()
     super.onDestroy()
+  }
+
+  companion object {
+    private val PACKAGE_DIRS = mapOf(
+      "ApplicationConfig.zip" to "ApplicationConfig",
+      "BuiltInPlugins.zip" to "BuiltInPlugins",
+      "BuiltInStandalonePlugins.zip" to "BuiltInStandalonePlugins",
+      "Plugins.zip" to "Plugins",
+      "StudioFonts.zip" to "StudioFonts",
+      "WebView2RuntimeInstaller.zip" to "WebView2RuntimeInstaller",
+    )
   }
 }

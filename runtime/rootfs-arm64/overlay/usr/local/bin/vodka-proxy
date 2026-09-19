@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import select
+import socket
+import threading
+
+PORT = 8899
+
+
+def pipe(left, right):
+    try:
+        while True:
+            readable, _, _ = select.select([left, right], [], [], 120)
+            if not readable:
+                return
+            for source in readable:
+                data = source.recv(65536)
+                if not data:
+                    return
+                (right if source is left else left).sendall(data)
+    except Exception:
+        pass
+    finally:
+        try:
+            left.close()
+        except Exception:
+            pass
+        try:
+            right.close()
+        except Exception:
+            pass
+
+
+def handle(conn):
+    request = b""
+    while b"\r\n\r\n" not in request:
+        chunk = conn.recv(4096)
+        if not chunk:
+            conn.close()
+            return
+        request += chunk
+    line = request.split(b"\r\n", 1)[0].decode(errors="ignore")
+    parts = line.split()
+    if len(parts) >= 2 and parts[0] == "CONNECT":
+        host, _, port = parts[1].partition(":")
+        try:
+            remote = socket.create_connection((host, int(port or 443)), timeout=15)
+        except Exception:
+            conn.sendall(b"HTTP/1.1 502 Bad Gateway\r\n\r\n")
+            conn.close()
+            return
+        conn.sendall(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+        pipe(conn, remote)
+    else:
+        conn.close()
+
+
+def main():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("127.0.0.1", PORT))
+    server.listen(64)
+    print("vodka-proxy: listening on 127.0.0.1:%d" % PORT, flush=True)
+    while True:
+        connection, _ = server.accept()
+        threading.Thread(target=handle, args=(connection,), daemon=True).start()
+
+
+main()
