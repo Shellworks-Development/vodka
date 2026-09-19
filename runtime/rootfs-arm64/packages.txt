@@ -18,7 +18,6 @@ nano
 file
 which
 strace
-ltrace
 ca-certificates
 curl
 wget
