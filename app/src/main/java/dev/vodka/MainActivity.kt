@@ -458,40 +458,52 @@ class MainActivity : AppCompatActivity() {
         val downloads = File(roots.baseDir, "downloads").apply { mkdirs() }
         val fetcher = StudioFetcher(downloads)
         val version = fetcher.latestVersion()
-        val zip = File(downloads, "RobloxStudio-${version.version}.zip")
-        fetcher.downloadPackage(version, zip) { done, total ->
-          if (total > 0) {
-            val percent = (done * 100 / total).toInt()
-            runOnUiThread { binding.status.text = "Roblox Studio ${version.version}: $percent%" }
+        val packages = fetcher.packageNames(version)
+        runOnUiThread { beginLive("Downloading Roblox Studio ${version.version} (${packages.size} packages)…") }
+
+        val zips = ArrayList<File>()
+        for ((index, name) in packages.withIndex()) {
+          val zip = File(downloads, name)
+          fetcher.downloadPackageByName(version, name, zip) { done, total ->
+            if (total > 0) {
+              val percent = (done * 100 / total).toInt()
+              runOnUiThread {
+                binding.status.text = "[${index + 1}/${packages.size}] $name: $percent%"
+              }
+            }
           }
+          zips.add(zip)
         }
+
         runOnUiThread { beginLive("Extracting Roblox Studio…") }
         val destination = File(roots.x86Rootfs, "opt/vodka/prefix/drive_c/RobloxStudio")
         destination.deleteRecursively()
         destination.mkdirs()
         var files = 0
-        java.util.zip.ZipInputStream(zip.inputStream().buffered()).use { stream ->
-          while (true) {
-            val entry = stream.nextEntry ?: break
-            val name = entry.name.replace('\\', '/')
-            if (!name.contains("..")) {
-              val out = File(destination, name)
-              if (entry.isDirectory) {
-                out.mkdirs()
-              } else {
-                out.parentFile?.mkdirs()
-                out.outputStream().use { stream.copyTo(it) }
-                files++
+        for (zip in zips) {
+          java.util.zip.ZipInputStream(zip.inputStream().buffered()).use { stream ->
+            while (true) {
+              val entry = stream.nextEntry ?: break
+              val name = entry.name.replace('\\', '/')
+              if (!name.contains("..")) {
+                val out = File(destination, name)
+                if (entry.isDirectory) {
+                  out.mkdirs()
+                } else {
+                  out.parentFile?.mkdirs()
+                  out.outputStream().use { stream.copyTo(it) }
+                  files++
+                }
+              }
+              stream.closeEntry()
+              if (files % 200 == 0) {
+                val count = files
+                runOnUiThread { binding.status.text = "Extracting Roblox Studio… $count files" }
               }
             }
-            stream.closeEntry()
-            if (files % 100 == 0) {
-              val count = files
-              runOnUiThread { binding.status.text = "Extracting Roblox Studio… $count files" }
-            }
           }
+          zip.delete()
         }
-        zip.delete()
         runOnUiThread {
           binding.status.text = "Roblox Studio ${version.version} installed ($files files)"
           updateSetup()

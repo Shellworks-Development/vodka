@@ -18,6 +18,43 @@ class StudioFetcher(private val destDir: File) {
     )
   }
 
+  fun packageNames(version: Version): List<String> {
+    val manifest = get("https://setup.rbxcdn.com/${version.upload}-rbxPkgManifest.txt")
+    return manifest.lineSequence()
+      .map { it.trim() }
+      .filter { it.isNotEmpty() && it.endsWith(".zip") && !it.contains('/') }
+      .toList()
+  }
+
+  fun downloadPackageByName(
+    version: Version,
+    name: String,
+    target: File,
+    onProgress: (Long, Long) -> Unit = { _, _ -> },
+  ): File {
+    target.parentFile?.mkdirs()
+    val connection = URL("https://setup.rbxcdn.com/${version.upload}-$name")
+      .openConnection() as HttpURLConnection
+    connection.setRequestProperty("User-Agent", "Vodka")
+    connection.connectTimeout = 20000
+    connection.readTimeout = 180000
+    val total = connection.contentLengthLong
+    connection.inputStream.use { input ->
+      target.outputStream().use { output ->
+        val buffer = ByteArray(1 shl 16)
+        var done = 0L
+        while (true) {
+          val read = input.read(buffer)
+          if (read < 0) break
+          output.write(buffer, 0, read)
+          done += read
+          onProgress(done, total)
+        }
+      }
+    }
+    return target
+  }
+
   fun downloadPackage(
     version: Version,
     target: File,
