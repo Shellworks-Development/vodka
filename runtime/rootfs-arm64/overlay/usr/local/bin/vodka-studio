@@ -28,7 +28,7 @@ export QT_QPA_PLATFORM=windows
 Xvfb :99 -nolock -screen 0 "${FBSIZE:-1280x720x24}" -fbdir /fb >/tmp/xvfb.log 2>&1 &
 sleep 3
 
-matchbox-window-manager -use_titlebar no >/tmp/wm.log 2>&1 &
+openbox --config-file /etc/openbox/rc.xml >/tmp/wm.log 2>&1 &
 sleep 1
 
 vodka-input >/tmp/vodka-input.log 2>&1 &
