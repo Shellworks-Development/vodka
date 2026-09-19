@@ -104,6 +104,16 @@
             android:indeterminate="true"
             android:visibility="invisible" />
 
+          <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="monospace"
+            android:text="@string/status_unknown"
+            android:textColor="@color/status_ok"
+            android:textSize="12sp" />
+
         </LinearLayout>
 
       </com.google.android.material.card.MaterialCardView>
@@ -123,40 +133,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone">
-
-        <com.google.android.material.card.MaterialCardView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          app:cardBackgroundColor="?attr/colorSurfaceVariant"
-          app:cardCornerRadius="16dp"
-          app:cardElevation="0dp">
-
-          <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="@string/capabilities_title"
-              android:textAppearance="?attr/textAppearanceTitleMedium"
-              android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <TextView
-              android:id="@+id/status"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginTop="10dp"
-              android:fontFamily="monospace"
-              android:text="@string/status_unknown"
-              android:textColor="@color/status_ok"
-              android:textSize="13sp" />
-
-          </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
         <TextView
           android:layout_width="wrap_content"

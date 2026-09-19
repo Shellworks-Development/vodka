@@ -25,9 +25,15 @@ class RuntimeFetcher(private val destDir: File, private val token: String? = nul
     return out
   }
 
+  fun downloadText(asset: Asset): String {
+    val connection = request(ASSET_URL.format(asset.id))
+    connection.setRequestProperty("Accept", "application/octet-stream")
+    return connection.inputStream.bufferedReader().use { it.readText() }.trim()
+  }
+
   fun download(asset: Asset, onProgress: (Long, Long) -> Unit = { _, _ -> }): File {
     val target = File(destDir, asset.name)
-    val connection = request("https://api.github.com/repos/Shellworks-Development/vodka/releases/assets/${asset.id}")
+    val connection = request(ASSET_URL.format(asset.id))
     connection.setRequestProperty("Accept", "application/octet-stream")
     connection.instanceFollowRedirects = true
     connection.inputStream.use { input ->
@@ -59,5 +65,7 @@ class RuntimeFetcher(private val destDir: File, private val token: String? = nul
   companion object {
     private const val RELEASE_URL =
       "https://api.github.com/repos/Shellworks-Development/vodka/releases/tags/runtime-latest"
+    private const val ASSET_URL =
+      "https://api.github.com/repos/Shellworks-Development/vodka/releases/assets/%d"
   }
 }

@@ -19,7 +19,7 @@
   <string name="install_studio">Download Roblox Studio</string>
   <string name="show_display">Show display</string>
   <string name="token_button">GitHub token (private repo)</string>
-  <string name="advanced">Advanced options</string>
+  <string name="advanced">Show more</string>
   <string name="action_continue">Continue</string>
 
   <string name="step_loading">Getting things ready…</string>

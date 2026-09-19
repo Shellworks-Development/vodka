@@ -326,20 +326,66 @@ class MainActivity : AppCompatActivity() {
 
   private fun downloadPayloads(names: List<String>) {
     setBusy(true)
-    binding.status.text = "Downloading…"
+    binding.status.text = "Checking release…"
     val roots = (application as VodkaApp).rootfs
     io.execute {
       val report = StringBuilder()
       try {
         val fetcher = RuntimeFetcher(roots.internalInbox, githubToken())
         val byName = fetcher.listAssets().associateBy { it.name }
+        val installedDir = File(roots.baseDir, "installed").apply { mkdirs() }
+        val needed = ArrayList<String>()
+        val toInstall = ArrayList<String>()
+
         for (name in names) {
           val asset = byName[name]
           if (asset == null) {
-            report.append(name).append(": not in release\n")
+            synchronized(report) { report.append(name).append(": not in release\n") }
             continue
           }
-          fetcher.download(asset)
+          val remote = byName["$name.sha256"]?.let {
+            runCatching { fetcher.downloadText(it).split(Regex("\\s+"))[0] }.getOrNull()
+          }
+          val local = File(installedDir, name).takeIf { it.exists() }?.readText()?.trim()
+          val inboxFile = File(roots.internalInbox, name)
+          val hasCopy = inboxFile.exists() && inboxFile.length() == asset.size
+          when {
+            remote != null && remote == local && hasCopy -> {
+              synchronized(report) { report.append(name).append(": unchanged, skipped\n") }
+            }
+            hasCopy -> {
+              synchronized(report) { report.append(name).append(": using existing download\n") }
+              toInstall.add(name)
+            }
+            else -> {
+              needed.add(name)
+              toInstall.add(name)
+            }
+          }
+        }
+
+        val progress = java.util.concurrent.ConcurrentHashMap<String, LongArray>()
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(4)
+        for (name in needed) {
+          val asset = byName.getValue(name)
+          progress[name] = longArrayOf(0, asset.size)
+          pool.execute {
+            runCatching {
+              fetcher.download(asset) { done, total ->
+                progress[name] = longArrayOf(done, total)
+                publishProgress(report, needed, progress)
+              }
+            }.onFailure { error ->
+              synchronized(report) {
+                report.append(name).append(": download failed: ").append(error.message).append('\n')
+              }
+            }
+          }
+        }
+        pool.shutdown()
+        pool.awaitTermination(30, java.util.concurrent.TimeUnit.MINUTES)
+
+        for (name in toInstall) {
           val file = File(roots.internalInbox, name)
           val result = when (name) {
             "rootfs-arm64.tar.gz" -> roots.installArm64(file)
@@ -349,10 +395,16 @@ class MainActivity : AppCompatActivity() {
             "mesa-turnip-aarch64.tar.gz" -> roots.installMesa(file)
             else -> null
           }
-          report.append(name).append(": ").append(describe(result)).append('\n')
+          if (result is RootfsManager.InstallResult.Installed) {
+            byName["$name.sha256"]?.let {
+              runCatching { File(installedDir, name).writeText(fetcher.downloadText(it).split(Regex("\\s+"))[0]) }
+            }
+          }
+          synchronized(report) { report.append(name).append(": ").append(describe(result)).append('\n') }
+          publishProgress(report, needed, progress)
         }
       } catch (e: Exception) {
-        report.append("download failed: ").append(e.message)
+        synchronized(report) { report.append("failed: ").append(e.message) }
       }
       File(roots.baseDir, "download.log").writeText(report.toString())
       runOnUiThread {
@@ -360,6 +412,23 @@ class MainActivity : AppCompatActivity() {
         updateSetup()
       }
     }
+  }
+
+  private fun publishProgress(
+    report: StringBuilder,
+    names: List<String>,
+    progress: java.util.concurrent.ConcurrentHashMap<String, LongArray>,
+  ) {
+    val text = buildString {
+      synchronized(report) { append(report) }
+      for (name in names) {
+        val value = progress[name] ?: continue
+        val total = value[1].coerceAtLeast(1)
+        val percent = (value[0] * 100 / total).toInt()
+        appendLine("$name: $percent%  (${value[0] / 1048576}/${value[1] / 1048576} MB)")
+      }
+    }
+    runOnUiThread { binding.status.text = text }
   }
 
   private fun fetchStudio() {
