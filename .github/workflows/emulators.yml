@@ -71,9 +71,9 @@ jobs:
       - name: Install tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build git python3 pkg-config
+          sudo apt-get install -y cmake ninja-build git python3 pkg-config clang lld build-essential
           if [ "${{ github.event.inputs.thunks }}" = "true" ]; then
-            sudo apt-get install -y clang libvulkan-dev libgl1-mesa-dev libegl1-mesa-dev \
+            sudo apt-get install -y libvulkan-dev libgl1-mesa-dev libegl1-mesa-dev \
               libx11-dev libxcb1-dev libxkbcommon-dev libdrm-dev libasound2-dev
           fi
 
@@ -83,6 +83,8 @@ jobs:
           git clone --depth 1 --recurse-submodules --shallow-submodules \
             https://github.com/FEX-Emu/FEX.git fex-src
           cmake -S fex-src -B fex-src/build -G Ninja \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DENABLE_LTO=True \
