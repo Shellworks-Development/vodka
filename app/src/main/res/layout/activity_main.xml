@@ -248,6 +248,30 @@
           android:layout_marginTop="8dp"
           android:text="@string/run_smoke" />
 
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/downloadButton"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/download_runtime" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/installStudioButton"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/install_studio" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/displayButton"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/show_display" />
+
       </LinearLayout>
 
     </LinearLayout>

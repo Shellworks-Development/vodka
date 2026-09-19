@@ -77,6 +77,17 @@ class RootfsManager(context: Context) {
       fileExists(it, "usr/bin/FEX") || fileExists(it, "bin/FEX")
     }
 
+  fun installBox64(archive: File): InstallResult =
+    merge(archive, arm64Rootfs) { it ->
+      fileExists(it, "usr/bin/box64") || fileExists(it, "bin/box64")
+    }
+
+  fun installMesa(archive: File): InstallResult =
+    merge(archive, arm64Rootfs) { it ->
+      fileExists(it, "usr/lib/libvulkan_freedreno.so") ||
+        fileExists(it, "usr/lib/aarch64-linux-gnu/libvulkan_freedreno.so")
+    }
+
   fun installInbox(): List<InboxResult> {
     val results = mutableListOf<InboxResult>()
     val seen = mutableSetOf<String>()

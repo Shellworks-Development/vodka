@@ -30,6 +30,11 @@
       </intent-filter>
     </activity>
 
+    <activity
+      android:name=".DisplayActivity"
+      android:exported="true"
+      android:configChanges="orientation|screenSize|keyboardHidden|density" />
+
   </application>
 
 </manifest>

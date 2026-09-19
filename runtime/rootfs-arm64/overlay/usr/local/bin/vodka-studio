@@ -1,0 +1,9 @@
+#!/bin/sh
+set -u
+
+export DISPLAY=:99
+
+Xvfb :99 -nolock -screen 0 "${FBSIZE:-1280x720x24}" -fbdir /fb >/tmp/xvfb.log 2>&1 &
+sleep 3
+
+"$FEX" "$WINE" "$STUDIO_EXE"

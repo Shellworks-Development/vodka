@@ -10,8 +10,16 @@ class StudioRuntime(
   val home: String = "/home/vodka"
   val winePrefix: String = "$home/.wine"
   val appConfig: String = "$home/.config/fex-emu/RobloxStudio.json"
+  val fbDir: File = File(roots.baseDir, "fb")
 
-  fun binds(): List<BindMount> = listOf(BindMount(roots.x86Rootfs.absolutePath, guestRootfs))
+  fun binds(): List<BindMount> = listOf(
+    BindMount(roots.x86Rootfs.absolutePath, guestRootfs),
+    BindMount(fbDir.absolutePath, "/fb"),
+  )
+
+  fun prepare() {
+    fbDir.mkdirs()
+  }
 
   fun configArray(studioExe: String? = null, pulse: String? = null): Array<String> = buildList {
     add("fex=/usr/bin/FEX")
@@ -39,7 +47,25 @@ class StudioRuntime(
   }
 
   fun runSetup(backend: ContainerBackend, onFinished: (VodkaSession.Result) -> Unit) {
+    runScript("/usr/local/bin/vodka-wine-setup", backend, onFinished)
+  }
+
+  fun runScript(
+    path: String,
+    backend: ContainerBackend,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
+    runScriptEnv(path, emptyList(), backend, onFinished)
+  }
+
+  fun runScriptEnv(
+    path: String,
+    extraEnv: List<String>,
+    backend: ContainerBackend,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
     writeFexConfig()
+    prepare()
     val env = listOf(
       "HOME=$home",
       "FEX=/usr/bin/FEX",
@@ -49,14 +75,36 @@ class StudioRuntime(
       "GUEST_ROOTFS=$guestRootfs",
       "DXVK_DIR=$guestRootfs/opt/vodka/dxvk",
       "DISPLAY=:0",
-    )
+      "FBSIZE=1280x720x24",
+    ) + extraEnv
     session.launch(
-      command = listOf("/bin/sh", "/usr/local/bin/vodka-wine-setup"),
+      command = listOf("/bin/sh", path),
       backend = backend,
       binds = binds(),
       env = env,
       workingDir = home,
       onFinished = onFinished,
+    )
+  }
+
+  fun launchStudioX11(
+    studioExe: String,
+    backend: ContainerBackend,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
+    runScriptEnv("/usr/local/bin/vodka-studio", listOf("STUDIO_EXE=$studioExe"), backend, onFinished)
+  }
+
+  fun installStudio(
+    installer: String,
+    backend: ContainerBackend,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
+    runScriptEnv(
+      "/usr/local/bin/vodka-install-studio",
+      listOf("INSTALLER=$installer"),
+      backend,
+      onFinished,
     )
   }
 

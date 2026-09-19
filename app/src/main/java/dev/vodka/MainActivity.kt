@@ -10,6 +10,8 @@ import dev.vodka.databinding.ActivityMainBinding
 import dev.vodka.runtime.BindMount
 import dev.vodka.runtime.ContainerBackend
 import dev.vodka.runtime.RootfsManager
+import dev.vodka.runtime.RuntimeFetcher
+import dev.vodka.runtime.StudioFetcher
 import dev.vodka.runtime.StudioRuntime
 import dev.vodka.runtime.VodkaSession
 import java.io.File
@@ -60,6 +62,7 @@ class MainActivity : AppCompatActivity() {
       ),
     )
     studio = StudioRuntime(roots, session)
+    studio.prepare()
 
     binding.backendAuto.isChecked = true
     binding.backendGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -83,6 +86,9 @@ class MainActivity : AppCompatActivity() {
     binding.installInboxButton.setOnClickListener { installInbox() }
     binding.setupButton.setOnClickListener { runSetup() }
     binding.runButton.setOnClickListener { runSmokeTest() }
+    binding.downloadButton.setOnClickListener { downloadRuntime() }
+    binding.installStudioButton.setOnClickListener { fetchStudio() }
+    binding.displayButton.setOnClickListener { showDisplay() }
 
     refreshStatus()
     handleAutomation(intent)
@@ -109,6 +115,15 @@ class MainActivity : AppCompatActivity() {
         binding.status.text = getString(R.string.status_launching)
         studio.runWine(args, selectedBackend) { report(it) }
       }
+      "run" -> {
+        val script = intent.getStringExtra("script")
+        if (!script.isNullOrEmpty()) {
+          setBusy(true)
+          binding.status.text = getString(R.string.status_launching)
+          studio.runScript(script, selectedBackend) { report(it) }
+        }
+      }
+      "display" -> showDisplay()
     }
   }
 
@@ -267,6 +282,94 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  private fun downloadRuntime() {
+    setBusy(true)
+    binding.status.text = "Downloading runtime…"
+    val roots = (application as VodkaApp).rootfs
+    io.execute {
+      val report = StringBuilder()
+      try {
+        val fetcher = RuntimeFetcher(roots.internalInbox)
+        val assets = fetcher.listAssets().filter { it.name.endsWith(".tar.gz") }
+        for (asset in assets) fetcher.download(asset)
+        val order = listOf(
+          "rootfs-arm64.tar.gz",
+          "rootfs-x86_64.tar.gz",
+          "fex-arm64.tar.gz",
+          "box64-aarch64.tar.gz",
+          "mesa-turnip-aarch64.tar.gz",
+        )
+        for (name in order) {
+          val file = File(roots.internalInbox, name)
+          if (!file.exists()) {
+            report.append(name).append(": not in release\n")
+            continue
+          }
+          val result = when (name) {
+            "rootfs-arm64.tar.gz" -> roots.installArm64(file)
+            "rootfs-x86_64.tar.gz" -> roots.installX86(file)
+            "fex-arm64.tar.gz" -> roots.installFex(file)
+            "box64-aarch64.tar.gz" -> roots.installBox64(file)
+            "mesa-turnip-aarch64.tar.gz" -> roots.installMesa(file)
+            else -> null
+          }
+          report.append(name).append(": ").append(describe(result)).append('\n')
+        }
+      } catch (e: Exception) {
+        report.append("download failed: ").append(e.message)
+      }
+      runOnUiThread {
+        binding.status.text = report.toString()
+        updateSetup()
+      }
+    }
+  }
+
+  private fun fetchStudio() {
+    setBusy(true)
+    binding.status.text = "Downloading Roblox Studio…"
+    val roots = (application as VodkaApp).rootfs
+    io.execute {
+      try {
+        val dir = File(roots.arm64Rootfs, "home/vodka").apply { mkdirs() }
+        val fetcher = StudioFetcher(dir)
+        val version = fetcher.latestVersion()
+        fetcher.downloadInstaller(version) { done, total ->
+          if (total > 0) {
+            val percent = (done * 100 / total).toInt()
+            runOnUiThread { binding.status.text = "Roblox Studio ${version.version}: $percent%" }
+          }
+        }
+        runOnUiThread { binding.status.text = "Studio ${version.version} downloaded; installing…" }
+        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend) { report(it) }
+      } catch (e: Exception) {
+        runOnUiThread {
+          binding.status.text = "Studio download failed: ${e.message}"
+          setBusy(false)
+        }
+      }
+    }
+  }
+
+  private fun showDisplay() {
+    studio.prepare()
+    val fb = File(studio.fbDir, "Xvfb_screen0")
+    startActivity(
+      Intent(this, DisplayActivity::class.java).apply {
+        putExtra("fb", fb.absolutePath)
+        putExtra("width", 1280)
+        putExtra("height", 720)
+      },
+    )
+  }
+
+  private fun describe(result: RootfsManager.InstallResult?): String = when (result) {
+    null -> "skipped"
+    is RootfsManager.InstallResult.Installed ->
+      "${result.files} files, ${result.bytes / 1024 / 1024} MiB"
+    is RootfsManager.InstallResult.Failed -> result.message
+  }
+
   private fun runSetup() {
     val roots = (application as VodkaApp).rootfs
     when {
@@ -314,7 +417,8 @@ class MainActivity : AppCompatActivity() {
     }
     setBusy(true)
     binding.status.text = getString(R.string.status_launching)
-    studio.launch(exe, selectedBackend) { report(it) }
+    studio.launchStudioX11(exe, selectedBackend) { report(it) }
+    showDisplay()
   }
 
   private fun runSmokeTest() {
@@ -357,6 +461,9 @@ class MainActivity : AppCompatActivity() {
       binding.installInboxButton,
       binding.setupButton,
       binding.runButton,
+      binding.downloadButton,
+      binding.installStudioButton,
+      binding.displayButton,
     )) {
       button.isEnabled = !busy
     }

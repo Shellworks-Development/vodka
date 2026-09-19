@@ -208,3 +208,25 @@ jobs:
             out/mesa-turnip-aarch64.tar.gz
             out/mesa-turnip-aarch64.tar.gz.sha256
           if-no-files-found: error
+
+  release:
+    name: publish runtime release
+    if: ${{ github.event.inputs.target == 'all' }}
+    needs: [box64, fex, winerootfs, rootfsarm64, mesa]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: runtime-latest
+          name: Vodka runtime (latest)
+          make_latest: true
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.sha256
