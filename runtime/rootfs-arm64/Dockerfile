@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 debian:bookworm-slim
+FROM --platform=linux/arm64 ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
@@ -15,7 +15,7 @@ RUN apt-get update \
 RUN mkdir -p /proc /sys /dev /run /tmp /usr/share/vodka \
  && chmod 1777 /tmp \
  && printf 'arm64\n' > /usr/share/vodka/arch \
- && printf 'bookworm\n' > /usr/share/vodka/suite \
+ && printf 'noble\n' > /usr/share/vodka/suite \
  && cp -a /tmp/vodka/overlay/. / \
  && rm -rf /tmp/vodka
 

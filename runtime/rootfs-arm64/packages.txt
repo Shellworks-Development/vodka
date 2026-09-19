@@ -47,6 +47,10 @@ libglx-mesa0
 libgl1-mesa-dri
 mesa-utils
 xvfb
+x11-utils
+xauth
+xwayland
+weston
 
 # Graphics: Vulkan
 libvulkan1
@@ -58,7 +62,7 @@ libwayland-client0
 libwayland-server0
 
 # Audio
-libasound2
+libasound2t64
 alsa-utils
 libpulse0
 
