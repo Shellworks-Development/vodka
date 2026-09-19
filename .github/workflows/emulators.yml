@@ -31,26 +31,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tooling
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build git
+      - name: Resolve upstream revision
+        id: rev
+        run: echo "sha=$(git ls-remote https://github.com/ptitSeb/box64.git HEAD | cut -c1-40)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: out/box64
+          key: box64-${{ steps.rev.outputs.sha }}-${{ hashFiles('.github/workflows/emulators.yml') }}
 
       - name: Build box64
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build git
           git clone --depth 1 --recurse-submodules --shallow-submodules \
             https://github.com/ptitSeb/box64.git box64-src
           cmake -S box64-src -B box64-src/build -G Ninja \
             -DARM64=1 \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build box64-src/build --parallel
+          mkdir -p out/box64/usr/bin
+          cp box64-src/build/box64 out/box64/usr/bin/box64
 
       - name: Package
         run: |
           set -euxo pipefail
-          mkdir -p out/box64/usr/bin
-          cp box64-src/build/box64 out/box64/usr/bin/box64
+          mkdir -p out
           strip out/box64/usr/bin/box64 || true
           chmod 755 out/box64/usr/bin/box64
           file out/box64/usr/bin/box64
@@ -72,18 +81,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tooling
+      - name: Resolve upstream revision
+        id: rev
+        run: echo "sha=$(git ls-remote https://github.com/FEX-Emu/FEX.git HEAD | cut -c1-40)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: stage
+          key: fex-${{ steps.rev.outputs.sha }}-${{ github.event.inputs.thunks }}-${{ hashFiles('.github/workflows/emulators.yml') }}
+
+      - name: Build FEX
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
+          set -euxo pipefail
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build git python3 pkg-config clang lld build-essential
           if [ "${{ github.event.inputs.thunks }}" = "true" ]; then
             sudo apt-get install -y libvulkan-dev libgl1-mesa-dev libegl1-mesa-dev \
               libx11-dev libxcb1-dev libxkbcommon-dev libdrm-dev libasound2-dev
           fi
-
-      - name: Build FEX
-        run: |
-          set -euxo pipefail
           git clone --depth 1 --recurse-submodules --shallow-submodules \
             https://github.com/FEX-Emu/FEX.git fex-src
           cmake -S fex-src -B fex-src/build -G Ninja \
@@ -166,7 +183,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: stage
+          key: mesa-${{ hashFiles('.github/workflows/emulators.yml') }}
+
       - name: Build Mesa (Turnip, kgsl) in bookworm
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run --rm -v "$PWD":/w -w /w debian:bookworm \
             bash -euxo pipefail -c '
