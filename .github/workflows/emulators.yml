@@ -88,6 +88,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DENABLE_LTO=True \
+            -DBUILD_FEXCONFIG=FALSE \
             -DBUILD_THUNKS=${{ github.event.inputs.thunks }}
           cmake --build fex-src/build --parallel
           rm -rf stage
