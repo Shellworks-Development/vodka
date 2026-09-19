@@ -21,6 +21,10 @@ RUN mkdir -p /opt/kombucha \
  && tar -xJf /tmp/kombucha.tar.xz -C /opt/kombucha --strip-components=1 \
  && rm /tmp/kombucha.tar.xz
 
+RUN WINEPREFIX=/opt/vodka/prefix WINEDEBUG=-all WINEARCH=win64 \
+      /opt/kombucha/bin/wine wineboot -u >/tmp/wineboot.log 2>&1 || true ; \
+    WINEPREFIX=/opt/vodka/prefix /opt/kombucha/bin/wineserver -k >/dev/null 2>&1 || true
+
 RUN curl -L --fail -o /usr/local/bin/winetricks \
       "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" \
  && chmod 755 /usr/local/bin/winetricks

@@ -8,7 +8,7 @@ class StudioRuntime(
 ) {
   val guestRootfs: String = "/opt/vodka/rootfs-x86_64"
   val home: String = "/home/vodka"
-  val winePrefix: String = "$home/.wine"
+  val winePrefix: String = "$guestRootfs/opt/vodka/prefix"
   val appConfig: String = "$home/.config/fex-emu/RobloxStudio.json"
   val fbDir: File = File(roots.baseDir, "fb")
 
@@ -87,6 +87,9 @@ class StudioRuntime(
       "DXVK_DIR=$guestRootfs/opt/vodka/dxvk",
       "DISPLAY=:0",
       "FBSIZE=1280x720x24",
+      "WINEDEBUG=-all",
+      "FEX_DISKCACHE=1",
+      "FEX_DISKCACHEPATH=$guestRootfs/opt/vodka/fexcache",
     ) + extraEnv
     session.launch(
       command = listOf("/bin/sh", path),

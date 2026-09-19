@@ -111,7 +111,6 @@ std::vector<std::string> build_environment(const ContainerConfig& config, Backen
   }
   if (backend == Backend::Proot) {
     const std::string proot_dir = parent_directory(config.proot_path);
-    if (!has_no_seccomp) env.emplace_back("PROOT_NO_SECCOMP=1");
     if (!has_tmp) env.emplace_back("PROOT_TMP_DIR=" + proot_dir);
     if (!has_loader) env.emplace_back("PROOT_LOADER=" + proot_dir + "/libproot_loader.so");
     if (has_ld_path) {
