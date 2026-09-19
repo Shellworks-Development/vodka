@@ -134,6 +134,27 @@ class StudioRuntime(
     )
   }
 
+  fun sendAuthTicket(
+    studioExe: String,
+    ticket: String,
+    backend: ContainerBackend,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
+    writeFexConfig()
+    prepare()
+    val config = configArray(studioExe, null)
+    val argv = NativeRuntime.planArgs(config).toMutableList()
+    argv.add("roblox-studio-auth:$ticket")
+    session.launch(
+      command = argv,
+      backend = backend,
+      binds = binds(),
+      env = NativeRuntime.planEnv(config).toList(),
+      workingDir = "$guestRootfs/opt/vodka/prefix/drive_c",
+      onFinished = onFinished,
+    )
+  }
+
   fun runWine(
     args: List<String>,
     backend: ContainerBackend,

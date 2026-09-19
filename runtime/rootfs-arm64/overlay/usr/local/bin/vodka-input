@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import socket
+import sys
+import time
 
 from Xlib import X, display
 from Xlib.ext import xtest
@@ -8,7 +10,22 @@ from Xlib.ext import xtest
 PORT = int(os.environ.get("VODKA_INPUT_PORT", "5599"))
 DISPLAY = os.environ.get("DISPLAY", ":99")
 
-d = display.Display(DISPLAY)
+
+def log(message):
+    print("vodka-input: %s" % message, flush=True)
+
+
+def connect_display():
+    for attempt in range(30):
+        try:
+            return display.Display(DISPLAY)
+        except Exception as error:
+            log("waiting for %s (%s): %s" % (DISPLAY, attempt, error))
+            time.sleep(1)
+    raise SystemExit("no X display")
+
+
+d = connect_display()
 if not d.query_extension("XTEST"):
     raise SystemExit("XTEST extension unavailable")
 
@@ -16,6 +33,7 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind(("127.0.0.1", PORT))
 server.listen(4)
+log("listening on 127.0.0.1:%d" % PORT)
 
 
 def handle(conn):
@@ -48,8 +66,8 @@ def handle(conn):
                             keycode,
                         )
                 d.sync()
-            except Exception:
-                pass
+            except Exception as error:
+                log("event error: %s" % error)
     conn.close()
 
 

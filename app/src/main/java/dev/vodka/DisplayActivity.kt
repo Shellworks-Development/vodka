@@ -92,8 +92,10 @@ class DisplayActivity : AppCompatActivity() {
       s.connect(InetSocketAddress("127.0.0.1", inputPort), 500)
       socket = s
       output = s.getOutputStream()
-    } catch (_: Exception) {
+      android.util.Log.i("VodkaInput", "connected to input server on $inputPort")
+    } catch (error: Exception) {
       output = null
+      android.util.Log.w("VodkaInput", "input server connect failed: $error")
     }
   }
 
@@ -103,7 +105,8 @@ class DisplayActivity : AppCompatActivity() {
     try {
       stream.write((line + "\n").toByteArray())
       stream.flush()
-    } catch (_: Exception) {
+    } catch (error: Exception) {
+      android.util.Log.w("VodkaInput", "send failed: $error")
       output = null
       socket = null
     }
@@ -132,6 +135,9 @@ class DisplayActivity : AppCompatActivity() {
     if (scale <= 0f) return true
     val x = ((event.x - offsetX) / scale).toInt()
     val y = ((event.y - offsetY) / scale).toInt()
+    if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+      android.util.Log.i("VodkaInput", "touch down at $x,$y (scale=$scale)")
+    }
     when (event.actionMasked) {
       MotionEvent.ACTION_DOWN -> {
         send("m $x $y")

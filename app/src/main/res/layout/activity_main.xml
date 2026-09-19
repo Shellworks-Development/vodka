@@ -249,6 +249,14 @@
           android:text="@string/show_display" />
 
         <com.google.android.material.button.MaterialButton
+          android:id="@+id/signinButton"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/sign_in" />
+
+        <com.google.android.material.button.MaterialButton
           android:id="@+id/tokenButton"
           style="?attr/materialButtonOutlinedStyle"
           android:layout_width="match_parent"

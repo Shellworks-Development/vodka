@@ -35,6 +35,11 @@
       android:exported="true"
       android:configChanges="orientation|screenSize|keyboardHidden|density" />
 
+    <activity
+      android:name=".LoginActivity"
+      android:exported="false"
+      android:configChanges="orientation|screenSize|keyboardHidden|density" />
+
   </application>
 
 </manifest>

@@ -74,6 +74,30 @@ class MainActivity : AppCompatActivity() {
       if (uri != null && payload != null) installFrom(payload, uri)
     }
 
+  private val signIn =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+      if (result.resultCode != RESULT_OK) return@registerForActivityResult
+      val ticket = result.data?.getStringExtra("ticket")
+      val cookie = result.data?.getStringExtra("cookie")
+      val roots = (application as VodkaApp).rootfs
+      when {
+        !ticket.isNullOrEmpty() -> {
+          val exe = studio.findStudioExe()
+          if (exe != null) {
+            setBusy(true)
+            beginLive("Authenticating Roblox Studio…")
+            studio.sendAuthTicket(exe, ticket, selectedBackend, { appendLive(it) }) { report(it) }
+          } else {
+            binding.status.text = getString(R.string.status_studio_missing)
+          }
+        }
+        !cookie.isNullOrEmpty() -> {
+          File(roots.arm64Rootfs, "home/vodka/roblosecurity.txt").writeText(cookie)
+          binding.status.text = "Captured .ROBLOSECURITY (${cookie.length} chars)"
+        }
+      }
+    }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     binding = ActivityMainBinding.inflate(layoutInflater)
@@ -127,6 +151,9 @@ class MainActivity : AppCompatActivity() {
     binding.downloadButton.setOnClickListener { downloadRuntime() }
     binding.installStudioButton.setOnClickListener { fetchStudio() }
     binding.displayButton.setOnClickListener { showDisplay() }
+    binding.signinButton.setOnClickListener {
+      signIn.launch(Intent(this, LoginActivity::class.java))
+    }
     binding.tokenButton.setOnClickListener { promptForToken() }
 
     refreshStatus()
@@ -655,6 +682,7 @@ class MainActivity : AppCompatActivity() {
       binding.downloadButton,
       binding.installStudioButton,
       binding.displayButton,
+      binding.signinButton,
       binding.tokenButton,
     )) {
       button.isEnabled = !busy
