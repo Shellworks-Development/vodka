@@ -1,0 +1,5 @@
+NAME=Vodka
+ID=vodka
+ARCH=amd64
+SUITE=bookworm
+ROLE=wine-guest

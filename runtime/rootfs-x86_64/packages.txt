@@ -1,0 +1,12 @@
+wine
+wine64
+winetricks
+cabextract
+ca-certificates
+curl
+wget
+xz-utils
+p7zip-full
+unzip
+fonts-wine
+libwine
