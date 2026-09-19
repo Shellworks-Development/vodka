@@ -1,0 +1,43 @@
+# Build output
+build/
+app/build/
+*/build/
+.cxx/
+.externalNativeBuild/
+obj/
+libs/
+
+# Gradle / Android
+.gradle/
+local.properties
+*.iml
+.idea/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.keystore
+!debug.keystore
+
+# Native
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+
+# Bundled native helper binaries (fetch with tools/fetch-proot-kit.sh)
+app/src/main/jniLibs/
+
+# Runtime artifacts (never commit Roblox or rootfs payloads)
+runtime/**/out/
+runtime/**/*.tar.zst
+runtime/**/*.tar.gz
+runtime/**/*.img
+tools/fetch-studio/cache/
+*.exe
+*.dll
+
+# Packaging / probes
+.device-probe/
+osx/
+.DS_Store

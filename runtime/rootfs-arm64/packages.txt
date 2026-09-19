@@ -1,0 +1,70 @@
+# Base userland
+bash
+coreutils
+util-linux
+procps
+psmisc
+findutils
+grep
+sed
+gawk
+tar
+gzip
+bzip2
+xz-utils
+zstd
+less
+nano
+file
+which
+strace
+ltrace
+ca-certificates
+curl
+wget
+git
+python3
+locales
+tzdata
+
+# Container / compatibility
+proot
+
+# Graphics: X11 client libraries
+libx11-6
+libxext6
+libxrender1
+libxi6
+libxcursor1
+libxrandr2
+libxfixes3
+libxkbcommon0
+libxkbcommon-x11-0
+xkb-data
+libgl1
+libegl1
+libgles2
+libglx-mesa0
+libgl1-mesa-dri
+mesa-utils
+xvfb
+
+# Graphics: Vulkan
+libvulkan1
+mesa-vulkan-drivers
+
+# Wayland (future presentation path)
+libwayland-client0
+libwayland-server0
+
+# Audio
+libasound2
+alsa-utils
+libpulse0
+
+# Fonts and misc runtime
+fonts-dejavu-core
+fonts-liberation
+fontconfig
+dbus
+dbus-x11

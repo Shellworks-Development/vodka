@@ -1,0 +1,5 @@
+NAME=Vodka
+ID=vodka
+ARCH=arm64
+SUITE=bookworm
+VERSION=0.1.0-alpha

@@ -1,0 +1,6 @@
+{
+  "Comment": "Vodka per-application FEX config for Roblox Studio (passed via FEX_APP_CONFIG).",
+  "Config": {
+    "HideHypervisorBit": "1"
+  }
+}

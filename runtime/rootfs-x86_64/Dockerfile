@@ -17,6 +17,11 @@ RUN curl -L --fail -o /usr/local/bin/winetricks \
       "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" \
  && chmod 755 /usr/local/bin/winetricks
 
+RUN ln -sfn /usr/lib/wine/wine64 /usr/bin/wine \
+ && ln -sfn /usr/lib/wine/wine64 /usr/lib/wine/wine \
+ && ln -sfn /usr/lib/wine/wineserver64 /usr/bin/wineserver \
+ && ln -sfn /usr/lib/wine/wineserver64 /usr/lib/wine/wineserver
+
 RUN mkdir -p /opt/vodka/dxvk \
  && curl -L --fail -o /tmp/dxvk.tar.gz \
       "https://github.com/doitsujin/dxvk/releases/download/v${DXVK_VERSION}/dxvk-${DXVK_VERSION}.tar.gz" \

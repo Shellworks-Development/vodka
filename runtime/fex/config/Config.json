@@ -1,0 +1,10 @@
+{
+  "Comment": "Baseline FEX config installed into the ARM64 rootfs by Vodka.",
+  "Config": {
+    "TSOEnabled": "1",
+    "VectorTSOEnabled": "1",
+    "MemcpySetTSOEnabled": "1",
+    "Multiblock": "1",
+    "SMCChecks": "MTrack"
+  }
+}

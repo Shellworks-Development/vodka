@@ -1,0 +1,48 @@
+<resources>
+  <string name="app_name">Vodka</string>
+  <string name="app_subtitle">Roblox Studio runtime for ARM</string>
+
+  <string name="capabilities_title">Details</string>
+  <string name="backend_title">Container backend</string>
+  <string name="backend_auto">Auto</string>
+  <string name="backend_namespaces">Namespaces</string>
+  <string name="backend_proot">proot</string>
+
+  <string name="probe">Check again</string>
+  <string name="run_smoke">Test the container</string>
+  <string name="install_rootfs">Install base rootfs…</string>
+  <string name="install_x86_rootfs">Install Wine rootfs…</string>
+  <string name="install_fex">Install FEX…</string>
+  <string name="install_inbox">Install from app inbox</string>
+  <string name="setup_wine">Set up Wine prefix</string>
+  <string name="advanced">Advanced options</string>
+  <string name="action_continue">Continue</string>
+
+  <string name="step_loading">Getting things ready…</string>
+  <string name="step_title_base">Step 1 of 4 · Base system</string>
+  <string name="step_detail_base">Choose the base rootfs archive (rootfs-arm64.tar.gz). This is the Linux userland Vodka runs inside.</string>
+  <string name="action_base">Choose base rootfs…</string>
+  <string name="step_title_wine">Step 2 of 4 · Wine</string>
+  <string name="step_detail_wine">Choose the Wine rootfs archive (rootfs-x86_64.tar.gz). It contains the x86-64 Windows-compatibility layer.</string>
+  <string name="action_wine">Choose Wine rootfs…</string>
+  <string name="step_title_fex">Step 3 of 4 · FEX</string>
+  <string name="step_detail_fex">Choose the FEX archive (fex-arm64.tar.gz). FEX translates the x86-64 instructions.</string>
+  <string name="action_fex">Choose FEX…</string>
+  <string name="step_title_prefix">Step 4 of 4 · First-time setup</string>
+  <string name="step_detail_prefix">Create the Wine prefix and install the graphics translation DLLs. This runs once and can take a minute.</string>
+  <string name="action_prefix">Set up now</string>
+  <string name="step_title_launch">Ready to go</string>
+  <string name="step_detail_launch">Everything is set up. Launch Roblox Studio.</string>
+  <string name="action_launch">Launch Roblox Studio</string>
+  <string name="step_title_launch_missing">Studio not found</string>
+  <string name="step_detail_launch_missing">The runtime is ready, but Roblox Studio is not in the Wine prefix yet. Install it inside the prefix, then try again.</string>
+
+  <string name="status_unknown">Checking…</string>
+  <string name="status_rootfs_missing">Base rootfs not installed.</string>
+  <string name="status_x86_missing">Wine rootfs not installed.</string>
+  <string name="status_fex_missing">FEX not installed.</string>
+  <string name="status_studio_missing">Roblox Studio not found in the Wine prefix.</string>
+  <string name="status_launching">Launching container…</string>
+  <string name="status_installing">Installing…</string>
+  <string name="status_setup">Setting up the Wine prefix…</string>
+</resources>

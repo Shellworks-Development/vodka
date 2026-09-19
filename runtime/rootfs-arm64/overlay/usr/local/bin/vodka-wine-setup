@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+FEX="${FEX:-/usr/bin/FEX}"
+WINE="${WINE:-/usr/lib/wine/wine64}"
+WINESERVER="${WINESERVER:-/usr/lib/wine/wineserver64}"
+WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
+GUEST_ROOTFS="${GUEST_ROOTFS:-/opt/vodka/rootfs-x86_64}"
+DXVK_DIR="${DXVK_DIR:-$GUEST_ROOTFS/opt/vodka/dxvk}"
+WINE_WINDOWS="${WINE_WINDOWS:-$GUEST_ROOTFS/usr/lib/x86_64-linux-gnu/wine}"
+WINEDLLPATH="${WINEDLLPATH:-$WINE_WINDOWS/x86_64-windows:$WINE_WINDOWS/i386-windows}"
+
+export WINEPREFIX
+export WINESERVER
+export WINEDLLPATH
+
+if [ ! -d "$WINEPREFIX/drive_c" ]; then
+  echo "vodka: creating wine prefix at $WINEPREFIX"
+  "$FEX" "$WINE" wineboot -u
+fi
+
+if [ -d "$DXVK_DIR" ]; then
+  for arch in system32 syswow64; do
+    target="$WINEPREFIX/drive_c/windows/$arch"
+    [ -d "$target" ] || continue
+    for dll in "$DXVK_DIR"/*.dll; do
+      [ -e "$dll" ] || continue
+      cp -f "$dll" "$target/" 2>/dev/null || true
+    done
+  done
+  echo "vodka: DXVK dlls staged from $DXVK_DIR"
+fi
+
+echo "vodka: wine prefix ready at $WINEPREFIX"
