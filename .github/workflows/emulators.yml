@@ -172,10 +172,11 @@ jobs:
             bash -euxo pipefail -c '
               apt-get update
               apt-get install -y --no-install-recommends \
-                meson ninja-build python3-mako pkg-config git ca-certificates \
+                ninja-build python3-mako python3-pip pkg-config git ca-certificates \
                 gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev byacc flex \
                 libvulkan-dev
-              git clone --depth 1 --branch mesa-23.3.6 \
+              pip3 install --break-system-packages --quiet meson
+              git clone --depth 1 --branch mesa-24.3.4 \
                 https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
               meson setup mesa-src/build mesa-src \
                 --prefix=/usr \
