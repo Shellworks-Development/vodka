@@ -26,7 +26,7 @@ class StudioRuntime(
     add("wine=/opt/kombucha/bin/wine")
     add("env=WINESERVER=/opt/kombucha/bin/wineserver")
     add("env=WINELOADER=/opt/kombucha/bin/wine")
-    add("env=WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows")
+    add("env=WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-unix:/opt/kombucha/lib/wine/x86_64-windows")
     add("env=WINEDATADIR=/opt/kombucha/share/wine")
     add("rootfs=$guestRootfs")
     add("thunks=/usr/lib/aarch64-linux-gnu/fex-emu/HostThunks")
@@ -74,7 +74,7 @@ class StudioRuntime(
       "WINE=/opt/kombucha/bin/wine",
       "WINESERVER=/opt/kombucha/bin/wineserver",
       "WINELOADER=/opt/kombucha/bin/wine",
-      "WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows",
+      "WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-unix:/opt/kombucha/lib/wine/x86_64-windows",
       "WINEDATADIR=/opt/kombucha/share/wine",
       "WINEPREFIX=$winePrefix",
       "GUEST_ROOTFS=$guestRootfs",

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DXVK_VERSION=2.4
@@ -9,7 +9,8 @@ ENV LC_ALL=C.UTF-8
 COPY packages.txt /tmp/vodka/packages.txt
 COPY overlay/ /tmp/vodka/overlay/
 
-RUN apt-get update \
+RUN dpkg --add-architecture i386 \
+ && apt-get update \
  && apt-get install -y --no-install-recommends \
       $(grep -vE '^[[:space:]]*(#|$)' /tmp/vodka/packages.txt | tr '\n' ' ') \
  && rm -rf /var/lib/apt/lists/*
@@ -38,7 +39,7 @@ RUN mkdir -p /opt/vodka/dxvk \
 
 RUN mkdir -p /usr/share/vodka \
  && printf 'amd64\n' > /usr/share/vodka/arch \
- && printf 'bookworm\n' > /usr/share/vodka/suite \
+ && printf 'noble\n' > /usr/share/vodka/suite \
  && printf '%s\n' "$DXVK_VERSION" > /usr/share/vodka/dxvk-version \
  && printf '%s\n' "$KOMBUCHA_TAG" > /usr/share/vodka/kombucha-version \
  && cp -a /tmp/vodka/overlay/. / \

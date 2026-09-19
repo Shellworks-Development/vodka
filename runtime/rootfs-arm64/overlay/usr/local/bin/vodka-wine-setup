@@ -7,8 +7,8 @@ WINESERVER="${WINESERVER:-/opt/kombucha/bin/wineserver}"
 WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
 GUEST_ROOTFS="${GUEST_ROOTFS:-/opt/vodka/rootfs-x86_64}"
 DXVK_DIR="${DXVK_DIR:-$GUEST_ROOTFS/opt/vodka/dxvk}"
-WINEDLLPATH="${WINEDLLPATH:-/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows}"
-WINEDATADIR="${WINEDATADIR:-/opt/kombucha/share/wine}"
+WINEDLLPATH="/opt/kombucha/lib/wine/x86_64-unix:/opt/kombucha/lib/wine/x86_64-windows"
+WINEDATADIR="/opt/kombucha/share/wine"
 
 export WINEPREFIX
 export WINESERVER
