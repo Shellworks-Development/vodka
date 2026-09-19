@@ -13,6 +13,7 @@ on:
           - fex
           - winerootfs
           - rootfsarm64
+          - mesa
           - all
       thunks:
         description: Build FEX host thunks (Vulkan/GL/EGL)
@@ -156,4 +157,51 @@ jobs:
         with:
           name: rootfs-arm64
           path: build/rootfs/rootfs-arm64.tar.gz*
+          if-no-files-found: error
+
+  mesa:
+    name: mesa turnip kgsl (aarch64)
+    if: ${{ github.event.inputs.target == 'mesa' || github.event.inputs.target == 'all' }}
+    runs-on: blacksmith-8vcpu-ubuntu-2404-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build python3-mako pkg-config git \
+            libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev
+
+      - name: Build Mesa (Turnip, kgsl)
+        run: |
+          set -euxo pipefail
+          git clone --depth 1 --branch mesa-23.3.6 \
+            https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
+          meson setup mesa-src/build mesa-src \
+            --prefix=/usr \
+            --buildtype=release \
+            -Dvulkan-drivers=freedreno \
+            -Dgallium-drivers=freedreno \
+            -Dfreedreno-kmds=kgsl \
+            -Dglx=disabled \
+            -Dplatforms= \
+            -Dllvm=disabled
+          ninja -C mesa-src/build
+          rm -rf stage
+          DESTDIR="$PWD/stage" ninja -C mesa-src/build install
+
+      - name: Package
+        run: |
+          set -euxo pipefail
+          mkdir -p out
+          tar -czf out/mesa-turnip-aarch64.tar.gz -C stage .
+          ( cd out && sha256sum mesa-turnip-aarch64.tar.gz > mesa-turnip-aarch64.tar.gz.sha256 )
+          find stage -name 'freedreno_icd*.json' -o -name 'libvulkan_freedreno.so' | head
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mesa-turnip-aarch64
+          path: |
+            out/mesa-turnip-aarch64.tar.gz
+            out/mesa-turnip-aarch64.tar.gz.sha256
           if-no-files-found: error
