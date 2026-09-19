@@ -1,0 +1,110 @@
+name: emulators
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to build
+        type: choice
+        default: both
+        options:
+          - both
+          - box64
+          - fex
+      thunks:
+        description: Build FEX host thunks (Vulkan/GL/EGL)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  box64:
+    name: box64 (aarch64)
+    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'box64' }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build git
+
+      - name: Build box64
+        run: |
+          set -euxo pipefail
+          git clone --depth 1 --recurse-submodules --shallow-submodules \
+            https://github.com/ptitSeb/box64.git box64-src
+          cmake -S box64-src -B box64-src/build -G Ninja \
+            -DARM64=1 \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build box64-src/build --parallel
+
+      - name: Package
+        run: |
+          set -euxo pipefail
+          mkdir -p out/box64
+          cp box64-src/build/box64 out/box64/box64
+          strip out/box64/box64 || true
+          chmod 755 out/box64/box64
+          file out/box64/box64
+          tar -czf out/box64-aarch64.tar.gz -C out/box64 .
+          ( cd out && sha256sum box64-aarch64.tar.gz > box64-aarch64.tar.gz.sha256 )
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: box64-aarch64
+          path: |
+            out/box64-aarch64.tar.gz
+            out/box64-aarch64.tar.gz.sha256
+          if-no-files-found: error
+
+  fex:
+    name: fex (aarch64)
+    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'fex' }}
+    runs-on: blacksmith-8vcpu-ubuntu-2404-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build git python3 pkg-config
+          if [ "${{ github.event.inputs.thunks }}" = "true" ]; then
+            sudo apt-get install -y clang libvulkan-dev libgl1-mesa-dev libegl1-mesa-dev \
+              libx11-dev libxcb1-dev libxkbcommon-dev libdrm-dev libasound2-dev
+          fi
+
+      - name: Build FEX
+        run: |
+          set -euxo pipefail
+          git clone --depth 1 --recurse-submodules --shallow-submodules \
+            https://github.com/FEX-Emu/FEX.git fex-src
+          cmake -S fex-src -B fex-src/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DENABLE_LTO=True \
+            -DBUILD_THUNKS=${{ github.event.inputs.thunks }}
+          cmake --build fex-src/build --parallel
+          rm -rf stage
+          DESTDIR="$PWD/stage" cmake --install fex-src/build
+
+      - name: Package
+        run: |
+          set -euxo pipefail
+          mkdir -p out
+          rm -f stage/usr/bin/FEXConfig
+          tar -czf out/fex-aarch64.tar.gz -C stage .
+          ( cd out && sha256sum fex-aarch64.tar.gz > fex-aarch64.tar.gz.sha256 )
+          ls -l stage/usr/bin
+          find stage/usr/lib -maxdepth 3 -name 'HostThunks' -type d -print || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fex-aarch64
+          path: |
+            out/fex-aarch64.tar.gz
+            out/fex-aarch64.tar.gz.sha256
+          if-no-files-found: error
