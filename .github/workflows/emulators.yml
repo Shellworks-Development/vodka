@@ -173,7 +173,8 @@ jobs:
               apt-get update
               apt-get install -y --no-install-recommends \
                 meson ninja-build python3-mako pkg-config git ca-certificates \
-                gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev byacc flex
+                gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev byacc flex \
+                libvulkan-dev
               git clone --depth 1 --branch mesa-23.3.6 \
                 https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
               meson setup mesa-src/build mesa-src \
@@ -188,6 +189,7 @@ jobs:
               ninja -C mesa-src/build
               rm -rf stage
               DESTDIR=/w/stage ninja -C mesa-src/build install
+              cc -O2 /w/tools/vulkan-probe/probe.c -lvulkan -o /w/stage/usr/bin/vkprobe
             '
 
       - name: Package
