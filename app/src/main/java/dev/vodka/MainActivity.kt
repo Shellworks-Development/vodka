@@ -484,16 +484,18 @@ class MainActivity : AppCompatActivity() {
           java.util.zip.ZipInputStream(zip.inputStream().buffered()).use { stream ->
             while (true) {
               val entry = stream.nextEntry ?: break
-              val name = entry.name.replace('\\', '/')
-              if (!name.contains("..")) {
-                val out = File(destination, name)
-                if (entry.isDirectory) {
-                  out.mkdirs()
-                } else {
-                  out.parentFile?.mkdirs()
-                  out.outputStream().use { stream.copyTo(it) }
-                  files++
-                }
+              val name = entry.name.replace('\\', '/').trimStart('/')
+              if (name.isEmpty() || name == "." || name.contains("..")) {
+                stream.closeEntry()
+                continue
+              }
+              val out = File(destination, name)
+              if (entry.isDirectory || name.endsWith("/")) {
+                out.mkdirs()
+              } else if (!out.isDirectory) {
+                out.parentFile?.mkdirs()
+                out.outputStream().use { stream.copyTo(it) }
+                files++
               }
               stream.closeEntry()
               if (files % 200 == 0) {
