@@ -32,6 +32,21 @@ class MainActivity : AppCompatActivity() {
   private var pendingPayload: Payload? = null
 
   private val prefs by lazy { getSharedPreferences("vodka", MODE_PRIVATE) }
+  private val liveLog = StringBuilder()
+
+  private fun beginLive(header: String) {
+    synchronized(liveLog) { liveLog.setLength(0) }
+    binding.status.text = header
+  }
+
+  private fun appendLive(text: String) {
+    val output = synchronized(liveLog) {
+      liveLog.append(text)
+      if (liveLog.length > 4000) liveLog.delete(0, liveLog.length - 4000)
+      liveLog.toString()
+    }
+    runOnUiThread { binding.status.text = output }
+  }
   private fun githubToken(): String? = prefs.getString("gh_token", null)?.takeIf { it.isNotBlank() }
 
   private fun promptForToken() {
@@ -447,7 +462,7 @@ class MainActivity : AppCompatActivity() {
           }
         }
         runOnUiThread { binding.status.text = "Studio ${version.version} downloaded; installing…" }
-        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend) { report(it) }
+        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend, { appendLive(it) }) { report(it) }
       } catch (e: Exception) {
         runOnUiThread {
           binding.status.text = "Studio download failed: ${e.message}"
@@ -493,8 +508,8 @@ class MainActivity : AppCompatActivity() {
       }
     }
     setBusy(true)
-    binding.status.text = getString(R.string.status_setup)
-    studio.runSetup(selectedBackend) { result ->
+    beginLive(getString(R.string.status_setup))
+    studio.runSetup(selectedBackend, { appendLive(it) }) { result ->
       report(result)
       runOnUiThread { updateSetup() }
     }
@@ -522,8 +537,8 @@ class MainActivity : AppCompatActivity() {
       return
     }
     setBusy(true)
-    binding.status.text = getString(R.string.status_launching)
-    studio.launchStudioX11(exe, selectedBackend) { report(it) }
+    beginLive(getString(R.string.status_launching))
+    studio.launchStudioX11(exe, selectedBackend, { appendLive(it) }) { report(it) }
     showDisplay()
   }
 

@@ -48,22 +48,28 @@ class StudioRuntime(
     File(roots.arm64Rootfs, home.removePrefix("/")).mkdirs()
   }
 
-  fun runSetup(backend: ContainerBackend, onFinished: (VodkaSession.Result) -> Unit) {
-    runScript("/usr/local/bin/vodka-wine-setup", backend, onFinished)
+  fun runSetup(
+    backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
+    onFinished: (VodkaSession.Result) -> Unit,
+  ) {
+    runScript("/usr/local/bin/vodka-wine-setup", backend, onOutput, onFinished)
   }
 
   fun runScript(
     path: String,
     backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
-    runScriptEnv(path, emptyList(), backend, onFinished)
+    runScriptEnv(path, emptyList(), backend, onOutput, onFinished)
   }
 
   fun runScriptEnv(
     path: String,
     extraEnv: List<String>,
     backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
     writeFexConfig()
@@ -88,6 +94,7 @@ class StudioRuntime(
       binds = binds(),
       env = env,
       workingDir = home,
+      onOutput = onOutput,
       onFinished = onFinished,
     )
   }
@@ -95,20 +102,29 @@ class StudioRuntime(
   fun launchStudioX11(
     studioExe: String,
     backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
-    runScriptEnv("/usr/local/bin/vodka-studio", listOf("STUDIO_EXE=$studioExe"), backend, onFinished)
+    runScriptEnv(
+      "/usr/local/bin/vodka-studio",
+      listOf("STUDIO_EXE=$studioExe"),
+      backend,
+      onOutput,
+      onFinished,
+    )
   }
 
   fun installStudio(
     installer: String,
     backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
     runScriptEnv(
       "/usr/local/bin/vodka-install-studio",
       listOf("INSTALLER=$installer"),
       backend,
+      onOutput,
       onFinished,
     )
   }

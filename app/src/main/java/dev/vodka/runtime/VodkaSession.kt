@@ -29,10 +29,33 @@ class VodkaSession(
     binds: List<BindMount> = emptyList(),
     env: List<String> = emptyList(),
     workingDir: String = "/",
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (Result) -> Unit,
   ) {
     executor.execute {
       val logFile = File(logDir, "run-${System.currentTimeMillis()}.log")
+      val stop = java.util.concurrent.atomic.AtomicBoolean(false)
+      val watcher = Thread {
+        var position = 0L
+        while (!stop.get()) {
+          if (logFile.exists()) {
+            val length = logFile.length()
+            if (length > position) {
+              runCatching {
+                java.io.RandomAccessFile(logFile, "r").use { raf ->
+                  raf.seek(position)
+                  val buffer = ByteArray((length - position).toInt())
+                  raf.readFully(buffer)
+                  position = length
+                  onOutput?.invoke(String(buffer, Charsets.UTF_8))
+                }
+              }
+            }
+          }
+          Thread.sleep(250)
+        }
+      }.also { it.isDaemon = true; it.start() }
+
       val code = NativeContainer.run(
         rootfs = rootfsDir.absolutePath,
         workingDir = workingDir,
@@ -46,6 +69,8 @@ class VodkaSession(
         fakeRoot = true,
         logPath = logFile.absolutePath,
       )
+      stop.set(true)
+      watcher.join(500)
       val log = logFile.takeIf { it.exists() }?.readText()?.takeLast(4000)?.trim().orEmpty()
       onFinished(
         if (code >= 0) Result.Exited(code, log)
