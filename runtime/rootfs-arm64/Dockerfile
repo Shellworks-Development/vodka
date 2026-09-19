@@ -21,6 +21,7 @@ RUN mkdir -p /proc /sys /dev /run /tmp /usr/share/vodka \
 
 RUN mkdir -p /usr/lib/x86_64-linux-gnu \
  && ln -sfn /opt/vodka/rootfs-x86_64/usr/share/wine /usr/share/wine \
- && ln -sfn /opt/vodka/rootfs-x86_64/usr/lib/x86_64-linux-gnu/wine /usr/lib/x86_64-linux-gnu/wine
+ && ln -sfn /opt/vodka/rootfs-x86_64/usr/lib/x86_64-linux-gnu/wine /usr/lib/x86_64-linux-gnu/wine \
+ && chmod 755 /usr/local/bin/vodka-input
 
 CMD ["/bin/bash"]

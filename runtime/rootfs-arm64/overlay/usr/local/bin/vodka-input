@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import os
+import socket
+
+from Xlib import X, display
+from Xlib.ext import xtest
+
+PORT = int(os.environ.get("VODKA_INPUT_PORT", "5599"))
+DISPLAY = os.environ.get("DISPLAY", ":99")
+
+d = display.Display(DISPLAY)
+if not d.query_extension("XTEST"):
+    raise SystemExit("XTEST extension unavailable")
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("127.0.0.1", PORT))
+server.listen(4)
+
+
+def handle(conn):
+    buffer = b""
+    while True:
+        data = conn.recv(4096)
+        if not data:
+            break
+        buffer += data
+        while b"\n" in buffer:
+            line, buffer = buffer.split(b"\n", 1)
+            parts = line.decode(errors="ignore").split()
+            if not parts:
+                continue
+            try:
+                if parts[0] == "m" and len(parts) >= 3:
+                    xtest.fake_input(d, X.MotionNotify, x=int(parts[1]), y=int(parts[2]))
+                elif parts[0] == "b" and len(parts) >= 3:
+                    xtest.fake_input(
+                        d,
+                        X.ButtonPress if parts[2] == "d" else X.ButtonRelease,
+                        int(parts[1]),
+                    )
+                elif parts[0] == "k" and len(parts) >= 3:
+                    keycode = d.keysym_to_keycode(int(parts[1]))
+                    if keycode:
+                        xtest.fake_input(
+                            d,
+                            X.KeyPress if parts[2] == "d" else X.KeyRelease,
+                            keycode,
+                        )
+                d.sync()
+            except Exception:
+                pass
+    conn.close()
+
+
+while True:
+    connection, _ = server.accept()
+    handle(connection)

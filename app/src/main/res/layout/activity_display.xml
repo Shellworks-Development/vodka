@@ -9,4 +9,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 
+  <EditText
+    android:id="@+id/keyInput"
+    android:layout_width="1dp"
+    android:layout_height="1dp"
+    android:alpha="0.01"
+    android:background="@null"
+    android:imeOptions="actionNone|flagNoExtractUi|flagNoFullscreen"
+    android:inputType="textVisiblePassword"
+    android:singleLine="true" />
+
 </FrameLayout>

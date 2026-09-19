@@ -51,6 +51,8 @@ x11-utils
 xauth
 xwayland
 weston
+xdotool
+python3-xlib
 
 # Graphics: Vulkan
 libvulkan1
