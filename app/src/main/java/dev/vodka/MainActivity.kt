@@ -1,9 +1,11 @@
 package dev.vodka
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import dev.vodka.databinding.ActivityMainBinding
@@ -28,6 +30,27 @@ class MainActivity : AppCompatActivity() {
 
   private var selectedBackend = ContainerBackend.AUTO
   private var pendingPayload: Payload? = null
+
+  private val prefs by lazy { getSharedPreferences("vodka", MODE_PRIVATE) }
+  private fun githubToken(): String? = prefs.getString("gh_token", null)?.takeIf { it.isNotBlank() }
+
+  private fun promptForToken() {
+    val input = EditText(this).apply {
+      setText(githubToken().orEmpty())
+      hint = "ghp_…"
+    }
+    AlertDialog.Builder(this)
+      .setTitle(R.string.token_button)
+      .setView(input)
+      .setPositiveButton("Save") { _, _ ->
+        prefs.edit().putString("gh_token", input.text.toString().trim()).apply()
+      }
+      .setNeutralButton("Clear") { _, _ ->
+        prefs.edit().remove("gh_token").apply()
+      }
+      .setNegativeButton("Cancel", null)
+      .show()
+  }
 
   private val pickArchive =
     registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -89,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     binding.downloadButton.setOnClickListener { downloadRuntime() }
     binding.installStudioButton.setOnClickListener { fetchStudio() }
     binding.displayButton.setOnClickListener { showDisplay() }
+    binding.tokenButton.setOnClickListener { promptForToken() }
 
     refreshStatus()
     handleAutomation(intent)
@@ -124,6 +148,9 @@ class MainActivity : AppCompatActivity() {
         }
       }
       "display" -> showDisplay()
+      "download" -> downloadRuntime()
+      "studio" -> fetchStudio()
+      "settoken" -> intent.getStringExtra("token")?.let { prefs.edit().putString("gh_token", it).apply() }
     }
   }
 
@@ -289,13 +316,13 @@ class MainActivity : AppCompatActivity() {
     io.execute {
       val report = StringBuilder()
       try {
-        val fetcher = RuntimeFetcher(roots.internalInbox)
+        val fetcher = RuntimeFetcher(roots.internalInbox, githubToken())
         val assets = fetcher.listAssets().filter { it.name.endsWith(".tar.gz") }
         for (asset in assets) fetcher.download(asset)
         val order = listOf(
           "rootfs-arm64.tar.gz",
           "rootfs-x86_64.tar.gz",
-          "fex-arm64.tar.gz",
+          "fex-aarch64.tar.gz",
           "box64-aarch64.tar.gz",
           "mesa-turnip-aarch64.tar.gz",
         )
@@ -308,7 +335,7 @@ class MainActivity : AppCompatActivity() {
           val result = when (name) {
             "rootfs-arm64.tar.gz" -> roots.installArm64(file)
             "rootfs-x86_64.tar.gz" -> roots.installX86(file)
-            "fex-arm64.tar.gz" -> roots.installFex(file)
+            "fex-aarch64.tar.gz" -> roots.installFex(file)
             "box64-aarch64.tar.gz" -> roots.installBox64(file)
             "mesa-turnip-aarch64.tar.gz" -> roots.installMesa(file)
             else -> null
@@ -318,6 +345,7 @@ class MainActivity : AppCompatActivity() {
       } catch (e: Exception) {
         report.append("download failed: ").append(e.message)
       }
+      File(roots.baseDir, "download.log").writeText(report.toString())
       runOnUiThread {
         binding.status.text = report.toString()
         updateSetup()
@@ -464,6 +492,7 @@ class MainActivity : AppCompatActivity() {
       binding.downloadButton,
       binding.installStudioButton,
       binding.displayButton,
+      binding.tokenButton,
     )) {
       button.isEnabled = !busy
     }

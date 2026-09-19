@@ -49,11 +49,11 @@ jobs:
       - name: Package
         run: |
           set -euxo pipefail
-          mkdir -p out/box64
-          cp box64-src/build/box64 out/box64/box64
-          strip out/box64/box64 || true
-          chmod 755 out/box64/box64
-          file out/box64/box64
+          mkdir -p out/box64/usr/bin
+          cp box64-src/build/box64 out/box64/usr/bin/box64
+          strip out/box64/usr/bin/box64 || true
+          chmod 755 out/box64/usr/bin/box64
+          file out/box64/usr/bin/box64
           tar -czf out/box64-aarch64.tar.gz -C out/box64 .
           ( cd out && sha256sum box64-aarch64.tar.gz > box64-aarch64.tar.gz.sha256 )
 

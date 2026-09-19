@@ -272,6 +272,14 @@
           android:layout_marginTop="8dp"
           android:text="@string/show_display" />
 
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/tokenButton"
+          style="?attr/materialButtonOutlinedStyle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:text="@string/token_button" />
+
       </LinearLayout>
 
     </LinearLayout>

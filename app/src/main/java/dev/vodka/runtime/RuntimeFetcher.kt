@@ -7,7 +7,7 @@ import java.net.URL
 
 class RuntimeFetcher(private val destDir: File, private val token: String? = null) {
 
-  data class Asset(val name: String, val url: String, val size: Long)
+  data class Asset(val id: Long, val name: String, val url: String, val size: Long)
 
   fun listAssets(): List<Asset> {
     val json = request(RELEASE_URL).inputStream.bufferedReader().use { it.readText() }
@@ -16,6 +16,7 @@ class RuntimeFetcher(private val destDir: File, private val token: String? = nul
     for (i in 0 until assets.length()) {
       val asset = assets.getJSONObject(i)
       out += Asset(
+        id = asset.getLong("id"),
         name = asset.getString("name"),
         url = asset.getString("browser_download_url"),
         size = asset.optLong("size"),
@@ -26,7 +27,9 @@ class RuntimeFetcher(private val destDir: File, private val token: String? = nul
 
   fun download(asset: Asset, onProgress: (Long, Long) -> Unit = { _, _ -> }): File {
     val target = File(destDir, asset.name)
-    val connection = request(asset.url)
+    val connection = request("https://api.github.com/repos/Shellworks-Development/vodka/releases/assets/${asset.id}")
+    connection.setRequestProperty("Accept", "application/octet-stream")
+    connection.instanceFollowRedirects = true
     connection.inputStream.use { input ->
       target.outputStream().use { output ->
         val buffer = ByteArray(1 shl 16)
