@@ -189,13 +189,15 @@ class MainActivity : AppCompatActivity() {
     val wine = roots.isX86Installed()
     val fex = roots.isFexInstalled()
     val prefix = roots.isPrefixReady()
-    val done = listOf(base, wine, fex, prefix).count { it }
+    val studioReady = studio.findStudioExe() != null
+    val done = listOf(base, wine, fex, prefix, studioReady).count { it }
 
     binding.stepChecklist.text = buildString {
       append(mark(base)).append(" base   ")
       append(mark(wine)).append(" wine   ")
       append(mark(fex)).append(" fex   ")
-      append(mark(prefix)).append(" prefix")
+      append(mark(prefix)).append(" prefix   ")
+      append(mark(studioReady)).append(" studio")
     }
     binding.stepProgress.setProgressCompat(done, true)
 
@@ -220,10 +222,10 @@ class MainActivity : AppCompatActivity() {
         binding.stepDetail.text = getString(R.string.step_detail_prefix)
         binding.primaryButton.text = getString(R.string.action_prefix)
       }
-      studio.findStudioExe() == null -> {
-        binding.stepTitle.text = getString(R.string.step_title_launch_missing)
-        binding.stepDetail.text = getString(R.string.step_detail_launch_missing)
-        binding.primaryButton.text = getString(R.string.action_launch)
+      !studioReady -> {
+        binding.stepTitle.text = getString(R.string.step_title_install_studio)
+        binding.stepDetail.text = getString(R.string.step_detail_install_studio)
+        binding.primaryButton.text = getString(R.string.action_install_studio_step)
       }
       else -> {
         binding.stepTitle.text = getString(R.string.step_title_launch)
@@ -243,6 +245,7 @@ class MainActivity : AppCompatActivity() {
         listOf("fex-aarch64.tar.gz", "box64-aarch64.tar.gz", "mesa-turnip-aarch64.tar.gz"),
       )
       !roots.isPrefixReady() -> runSetup()
+      studio.findStudioExe() == null -> fetchStudio()
       else -> launchStudio()
     }
   }
@@ -461,8 +464,11 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { binding.status.text = "Roblox Studio ${version.version}: $percent%" }
           }
         }
-        runOnUiThread { binding.status.text = "Studio ${version.version} downloaded; installing…" }
-        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend, { appendLive(it) }) { report(it) }
+        runOnUiThread { beginLive(getString(R.string.status_installing_studio)) }
+        studio.installStudio("/home/vodka/RobloxStudioInstaller.exe", selectedBackend, { appendLive(it) }) {
+          report(it)
+          runOnUiThread { updateSetup() }
+        }
       } catch (e: Exception) {
         runOnUiThread {
           binding.status.text = "Studio download failed: ${e.message}"
@@ -533,7 +539,7 @@ class MainActivity : AppCompatActivity() {
     }
     val exe = studio.findStudioExe()
     if (exe == null) {
-      fetchStudio()
+      binding.status.text = getString(R.string.status_studio_missing)
       return
     }
     setBusy(true)

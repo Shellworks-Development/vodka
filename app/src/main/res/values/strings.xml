@@ -23,21 +23,25 @@
   <string name="action_continue">Continue</string>
 
   <string name="step_loading">Getting things ready…</string>
-  <string name="step_title_base">Step 1 of 4 · Base system</string>
+  <string name="step_title_base">Step 1 of 5 · Base system</string>
   <string name="step_detail_base">Downloads the base Linux rootfs (rootfs-arm64) from the Vodka release.</string>
   <string name="action_base">Download base system</string>
-  <string name="step_title_wine">Step 2 of 4 · Wine</string>
+  <string name="step_title_wine">Step 2 of 5 · Wine</string>
   <string name="step_detail_wine">Downloads the x86-64 Wine rootfs (rootfs-x86_64) from the Vodka release.</string>
   <string name="action_wine">Download Wine rootfs</string>
-  <string name="step_title_fex">Step 3 of 4 · Emulator &amp; GPU</string>
+  <string name="step_title_fex">Step 3 of 5 · Emulator &amp; GPU</string>
   <string name="step_detail_fex">Downloads FEX, Box64 and the Turnip GPU driver from the Vodka release.</string>
   <string name="action_fex">Download emulator &amp; GPU</string>
-  <string name="step_title_prefix">Step 4 of 4 · First-time setup</string>
+  <string name="step_title_prefix">Step 4 of 5 · First-time setup</string>
   <string name="step_detail_prefix">Create the Wine prefix and install the graphics translation DLLs. This runs once and can take a minute.</string>
   <string name="action_prefix">Set up now</string>
-  <string name="step_title_launch">Ready to go</string>
+  <string name="step_title_launch">Step 5 of 5 · Ready to go</string>
   <string name="step_detail_launch">Everything is set up. Launch Roblox Studio.</string>
   <string name="action_launch">Launch Roblox Studio</string>
+  <string name="step_title_install_studio">Step 5 of 5 · Roblox Studio</string>
+  <string name="step_detail_install_studio">Downloads the Roblox Studio installer from Roblox and installs it into the Wine prefix. This needs network and can take a few minutes.</string>
+  <string name="action_install_studio_step">Install Roblox Studio</string>
+  <string name="status_installing_studio">Installing Roblox Studio…</string>
   <string name="step_title_launch_missing">Studio not found</string>
   <string name="step_detail_launch_missing">The runtime is ready, but Roblox Studio is not in the Wine prefix yet. Install it inside the prefix, then try again.</string>
 

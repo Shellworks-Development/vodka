@@ -76,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:max="4"
+            android:max="5"
             app:indicatorColor="?attr/colorOnPrimaryContainer"
             app:trackColor="?attr/colorPrimary"
             app:trackCornerRadius="4dp" />
