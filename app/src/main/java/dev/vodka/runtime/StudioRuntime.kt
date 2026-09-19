@@ -23,9 +23,11 @@ class StudioRuntime(
 
   fun configArray(studioExe: String? = null, pulse: String? = null): Array<String> = buildList {
     add("fex=/usr/bin/FEX")
-    add("wine=/usr/lib/wine/wine64")
-    add("env=WINESERVER=/usr/lib/wine/wineserver64")
-    add("env=WINEDLLPATH=$guestRootfs/usr/lib/x86_64-linux-gnu/wine/x86_64-windows:$guestRootfs/usr/lib/x86_64-linux-gnu/wine/i386-windows")
+    add("wine=/opt/kombucha/bin/wine")
+    add("env=WINESERVER=/opt/kombucha/bin/wineserver")
+    add("env=WINELOADER=/opt/kombucha/bin/wine")
+    add("env=WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows")
+    add("env=WINEDATADIR=/opt/kombucha/share/wine")
     add("rootfs=$guestRootfs")
     add("thunks=/usr/lib/aarch64-linux-gnu/fex-emu/HostThunks")
     add("home=$home")
@@ -69,8 +71,11 @@ class StudioRuntime(
     val env = listOf(
       "HOME=$home",
       "FEX=/usr/bin/FEX",
-      "WINE=/usr/lib/wine/wine64",
-      "WINESERVER=/usr/lib/wine/wineserver64",
+      "WINE=/opt/kombucha/bin/wine",
+      "WINESERVER=/opt/kombucha/bin/wineserver",
+      "WINELOADER=/opt/kombucha/bin/wine",
+      "WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows",
+      "WINEDATADIR=/opt/kombucha/share/wine",
       "WINEPREFIX=$winePrefix",
       "GUEST_ROOTFS=$guestRootfs",
       "DXVK_DIR=$guestRootfs/opt/vodka/dxvk",

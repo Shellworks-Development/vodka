@@ -1,7 +1,8 @@
 FROM --platform=linux/amd64 debian:bookworm-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG DXVK_VERSION=1.10.3
+ARG DXVK_VERSION=2.4
+ARG KOMBUCHA_TAG=proton-stable+20260914101957
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
@@ -12,6 +13,12 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       $(grep -vE '^[[:space:]]*(#|$)' /tmp/vodka/packages.txt | tr '\n' ' ') \
  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/kombucha \
+ && curl -L --fail -o /tmp/kombucha.tar.xz \
+      "https://github.com/vinegarhq/kombucha/releases/download/${KOMBUCHA_TAG}/kombucha-${KOMBUCHA_TAG}.tar.xz" \
+ && tar -xJf /tmp/kombucha.tar.xz -C /opt/kombucha --strip-components=1 \
+ && rm /tmp/kombucha.tar.xz
 
 RUN curl -L --fail -o /usr/local/bin/winetricks \
       "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks" \
@@ -33,6 +40,7 @@ RUN mkdir -p /usr/share/vodka \
  && printf 'amd64\n' > /usr/share/vodka/arch \
  && printf 'bookworm\n' > /usr/share/vodka/suite \
  && printf '%s\n' "$DXVK_VERSION" > /usr/share/vodka/dxvk-version \
+ && printf '%s\n' "$KOMBUCHA_TAG" > /usr/share/vodka/kombucha-version \
  && cp -a /tmp/vodka/overlay/. / \
  && rm -rf /tmp/vodka
 

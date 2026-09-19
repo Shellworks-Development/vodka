@@ -24,14 +24,14 @@
 
   <string name="step_loading">Getting things ready…</string>
   <string name="step_title_base">Step 1 of 4 · Base system</string>
-  <string name="step_detail_base">Choose the base rootfs archive (rootfs-arm64.tar.gz). This is the Linux userland Vodka runs inside.</string>
-  <string name="action_base">Choose base rootfs…</string>
+  <string name="step_detail_base">Downloads the base Linux rootfs (rootfs-arm64) from the Vodka release.</string>
+  <string name="action_base">Download base system</string>
   <string name="step_title_wine">Step 2 of 4 · Wine</string>
-  <string name="step_detail_wine">Choose the Wine rootfs archive (rootfs-x86_64.tar.gz). It contains the x86-64 Windows-compatibility layer.</string>
-  <string name="action_wine">Choose Wine rootfs…</string>
-  <string name="step_title_fex">Step 3 of 4 · FEX</string>
-  <string name="step_detail_fex">Choose the FEX archive (fex-arm64.tar.gz). FEX translates the x86-64 instructions.</string>
-  <string name="action_fex">Choose FEX…</string>
+  <string name="step_detail_wine">Downloads the x86-64 Wine rootfs (rootfs-x86_64) from the Vodka release.</string>
+  <string name="action_wine">Download Wine rootfs</string>
+  <string name="step_title_fex">Step 3 of 4 · Emulator &amp; GPU</string>
+  <string name="step_detail_fex">Downloads FEX, Box64 and the Turnip GPU driver from the Vodka release.</string>
+  <string name="action_fex">Download emulator &amp; GPU</string>
   <string name="step_title_prefix">Step 4 of 4 · First-time setup</string>
   <string name="step_detail_prefix">Create the Wine prefix and install the graphics translation DLLs. This runs once and can take a minute.</string>
   <string name="action_prefix">Set up now</string>

@@ -2,17 +2,18 @@
 set -eu
 
 FEX="${FEX:-/usr/bin/FEX}"
-WINE="${WINE:-/usr/lib/wine/wine64}"
-WINESERVER="${WINESERVER:-/usr/lib/wine/wineserver64}"
+WINE="${WINE:-/opt/kombucha/bin/wine}"
+WINESERVER="${WINESERVER:-/opt/kombucha/bin/wineserver}"
 WINEPREFIX="${WINEPREFIX:-$HOME/.wine}"
 GUEST_ROOTFS="${GUEST_ROOTFS:-/opt/vodka/rootfs-x86_64}"
 DXVK_DIR="${DXVK_DIR:-$GUEST_ROOTFS/opt/vodka/dxvk}"
-WINE_WINDOWS="${WINE_WINDOWS:-$GUEST_ROOTFS/usr/lib/x86_64-linux-gnu/wine}"
-WINEDLLPATH="${WINEDLLPATH:-$WINE_WINDOWS/x86_64-windows:$WINE_WINDOWS/i386-windows}"
+WINEDLLPATH="${WINEDLLPATH:-/opt/kombucha/lib/wine/x86_64-windows:/opt/kombucha/lib/wine/i386-windows}"
+WINEDATADIR="${WINEDATADIR:-/opt/kombucha/share/wine}"
 
 export WINEPREFIX
 export WINESERVER
 export WINEDLLPATH
+export WINEDATADIR
 
 if [ ! -d "$WINEPREFIX/drive_c" ]; then
   echo "vodka: creating wine prefix at $WINEPREFIX"

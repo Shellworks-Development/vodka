@@ -149,6 +149,7 @@ class MainActivity : AppCompatActivity() {
       }
       "display" -> showDisplay()
       "download" -> downloadRuntime()
+      "primary" -> primaryAction()
       "studio" -> fetchStudio()
       "settoken" -> intent.getStringExtra("token")?.let { prefs.edit().putString("gh_token", it).apply() }
     }
@@ -221,9 +222,11 @@ class MainActivity : AppCompatActivity() {
   private fun primaryAction() {
     val roots = (application as VodkaApp).rootfs
     when {
-      !roots.isInstalled() -> pick(Payload.BASE)
-      !roots.isX86Installed() -> pick(Payload.X86)
-      !roots.isFexInstalled() -> pick(Payload.FEX)
+      !roots.isInstalled() -> downloadPayloads(listOf("rootfs-arm64.tar.gz"))
+      !roots.isX86Installed() -> downloadPayloads(listOf("rootfs-x86_64.tar.gz"))
+      !roots.isFexInstalled() -> downloadPayloads(
+        listOf("fex-aarch64.tar.gz", "box64-aarch64.tar.gz", "mesa-turnip-aarch64.tar.gz"),
+      )
       !roots.isPrefixReady() -> runSetup()
       else -> launchStudio()
     }
@@ -310,28 +313,34 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun downloadRuntime() {
+    downloadPayloads(
+      listOf(
+        "rootfs-arm64.tar.gz",
+        "rootfs-x86_64.tar.gz",
+        "fex-aarch64.tar.gz",
+        "box64-aarch64.tar.gz",
+        "mesa-turnip-aarch64.tar.gz",
+      ),
+    )
+  }
+
+  private fun downloadPayloads(names: List<String>) {
     setBusy(true)
-    binding.status.text = "Downloading runtime…"
+    binding.status.text = "Downloading…"
     val roots = (application as VodkaApp).rootfs
     io.execute {
       val report = StringBuilder()
       try {
         val fetcher = RuntimeFetcher(roots.internalInbox, githubToken())
-        val assets = fetcher.listAssets().filter { it.name.endsWith(".tar.gz") }
-        for (asset in assets) fetcher.download(asset)
-        val order = listOf(
-          "rootfs-arm64.tar.gz",
-          "rootfs-x86_64.tar.gz",
-          "fex-aarch64.tar.gz",
-          "box64-aarch64.tar.gz",
-          "mesa-turnip-aarch64.tar.gz",
-        )
-        for (name in order) {
-          val file = File(roots.internalInbox, name)
-          if (!file.exists()) {
+        val byName = fetcher.listAssets().associateBy { it.name }
+        for (name in names) {
+          val asset = byName[name]
+          if (asset == null) {
             report.append(name).append(": not in release\n")
             continue
           }
+          fetcher.download(asset)
+          val file = File(roots.internalInbox, name)
           val result = when (name) {
             "rootfs-arm64.tar.gz" -> roots.installArm64(file)
             "rootfs-x86_64.tar.gz" -> roots.installX86(file)
@@ -440,7 +449,7 @@ class MainActivity : AppCompatActivity() {
     }
     val exe = studio.findStudioExe()
     if (exe == null) {
-      binding.status.text = getString(R.string.status_studio_missing)
+      fetchStudio()
       return
     }
     setBusy(true)
