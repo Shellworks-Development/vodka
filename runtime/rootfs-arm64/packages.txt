@@ -51,6 +51,7 @@ x11-utils
 xauth
 xwayland
 weston
+matchbox-window-manager
 xdotool
 python3-xlib
 
