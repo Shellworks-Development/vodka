@@ -21,7 +21,8 @@ RUN mkdir -p /opt/kombucha \
  && tar -xJf /tmp/kombucha.tar.xz -C /opt/kombucha --strip-components=1 \
  && rm /tmp/kombucha.tar.xz
 
-RUN export WINEPREFIX=/opt/vodka/prefix WINEARCH=win64 WINEDEBUG=-all \
+RUN mkdir -p /opt/vodka/prefix \
+ && export WINEPREFIX=/opt/vodka/prefix WINEARCH=win64 WINEDEBUG=-all \
       WINEDLLPATH=/opt/kombucha/lib/wine/x86_64-unix:/opt/kombucha/lib/wine/x86_64-windows \
       WINEDATADIR=/opt/kombucha/share/wine ; \
     /opt/kombucha/bin/wine wineboot -u || true ; \
