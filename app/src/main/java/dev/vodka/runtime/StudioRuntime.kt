@@ -138,6 +138,7 @@ class StudioRuntime(
     studioExe: String,
     ticket: String,
     backend: ContainerBackend,
+    onOutput: ((String) -> Unit)? = null,
     onFinished: (VodkaSession.Result) -> Unit,
   ) {
     writeFexConfig()
@@ -151,6 +152,7 @@ class StudioRuntime(
       binds = binds(),
       env = NativeRuntime.planEnv(config).toList(),
       workingDir = "$guestRootfs/opt/vodka/prefix/drive_c",
+      onOutput = onOutput,
       onFinished = onFinished,
     )
   }
