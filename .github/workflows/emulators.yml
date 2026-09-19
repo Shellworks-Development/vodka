@@ -39,7 +39,7 @@ jobs:
         id: cache
         with:
           path: out/box64
-          key: box64-${{ steps.rev.outputs.sha }}-${{ hashFiles('.github/workflows/emulators.yml') }}
+          key: box64-${{ steps.rev.outputs.sha }}-v1
 
       - name: Build box64
         if: steps.cache.outputs.cache-hit != 'true'
@@ -89,7 +89,7 @@ jobs:
         id: cache
         with:
           path: stage
-          key: fex-${{ steps.rev.outputs.sha }}-${{ github.event.inputs.thunks }}-${{ hashFiles('.github/workflows/emulators.yml') }}
+          key: fex-${{ steps.rev.outputs.sha }}-${{ github.event.inputs.thunks }}-v1
 
       - name: Build FEX
         if: steps.cache.outputs.cache-hit != 'true'
@@ -191,7 +191,7 @@ jobs:
         id: cache
         with:
           path: stage
-          key: mesa-${{ hashFiles('.github/workflows/emulators.yml') }}
+          key: mesa-24.3.4-v1
 
       - name: Build Mesa (Turnip, kgsl) in bookworm
         if: steps.cache.outputs.cache-hit != 'true'
