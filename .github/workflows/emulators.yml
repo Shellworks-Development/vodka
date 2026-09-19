@@ -11,6 +11,8 @@ on:
           - both
           - box64
           - fex
+          - winerootfs
+          - all
       thunks:
         description: Build FEX host thunks (Vulkan/GL/EGL)
         type: boolean
@@ -22,7 +24,7 @@ permissions:
 jobs:
   box64:
     name: box64 (aarch64)
-    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'box64' }}
+    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'box64' || github.event.inputs.target == 'all' }}
     runs-on: blacksmith-4vcpu-ubuntu-2404-arm
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +65,7 @@ jobs:
 
   fex:
     name: fex (aarch64)
-    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'fex' }}
+    if: ${{ github.event.inputs.target == 'both' || github.event.inputs.target == 'fex' || github.event.inputs.target == 'all' }}
     runs-on: blacksmith-8vcpu-ubuntu-2404-arm
     steps:
       - uses: actions/checkout@v4
@@ -111,4 +113,25 @@ jobs:
           path: |
             out/fex-aarch64.tar.gz
             out/fex-aarch64.tar.gz.sha256
+          if-no-files-found: error
+
+  winerootfs:
+    name: wine rootfs (amd64)
+    if: ${{ github.event.inputs.target == 'winerootfs' || github.event.inputs.target == 'all' }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build x86-64 Wine rootfs
+        run: ./runtime/rootfs-x86_64/build.sh
+
+      - name: Show output
+        run: ls -lh build/rootfs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rootfs-x86_64
+          path: build/rootfs/rootfs-x86_64.tar.gz*
           if-no-files-found: error
