@@ -65,7 +65,8 @@ cmake -S "$src_dir" -B "$src_dir/build" -G Ninja \
   -DCMAKE_INSTALL_PREFIX="$prefix" \
   -DENABLE_LTO=True \
   -DBUILD_THUNKS=True \
-  -DBUILD_FEXCONFIG=False
+  -DBUILD_FEXCONFIG=False \
+  -DBUILD_TESTING=False
 
 echo "==> building"
 cmake --build "$src_dir/build" --parallel
