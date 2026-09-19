@@ -173,7 +173,7 @@ jobs:
               apt-get update
               apt-get install -y --no-install-recommends \
                 meson ninja-build python3-mako pkg-config git ca-certificates \
-                gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev
+                gcc g++ libdrm-dev libexpat1-dev zlib1g-dev libzstd-dev byacc flex
               git clone --depth 1 --branch mesa-23.3.6 \
                 https://gitlab.freedesktop.org/mesa/mesa.git mesa-src
               meson setup mesa-src/build mesa-src \
